@@ -8,7 +8,7 @@ public class User {
 
 
     //Constructor to create student object with first name and last name
-    public User(String firstName, String lastName, String email, String password, String phoneNumber, String programOfStudy) {
+    public User(String firstName, String lastName, String email, String password, String phoneNumber) {
 
         this.firstName = firstName;
         this.lastName = lastName;
@@ -50,7 +50,7 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
-    @override
+   @Override
     public String toString(){
         return "User{" +
                 "firstName='" + firstName + '\'' +
