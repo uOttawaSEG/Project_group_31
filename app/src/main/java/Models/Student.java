@@ -22,6 +22,6 @@ public class Student {
     }
     // Set or update the last name
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        this.lastName = lastName;.
     }
 }
