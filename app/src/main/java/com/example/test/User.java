@@ -1,3 +1,4 @@
+package com.example.test;
 
 public class User {
     private String firstName;
@@ -6,15 +7,18 @@ public class User {
     private String password;
     private String phoneNumber;
 
+    protected String role;
+
 
     //Constructor to create student object with first name and last name
-    public User(String firstName, String lastName, String email, String password, String phoneNumber) {
+    public User(String firstName, String lastName, String email, String password, String phoneNumber, String role) {
 
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.phoneNumber = phoneNumber;
+        this.role = role;
     }
     //Get the first name
     public String getFirstName() {

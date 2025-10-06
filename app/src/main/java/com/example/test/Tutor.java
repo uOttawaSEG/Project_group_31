@@ -1,3 +1,5 @@
+package com.example.test;
+
 import java.util.List;
 
 public class Tutor extends User {
@@ -7,7 +9,7 @@ public class Tutor extends User {
     public Tutor(String firstName, String lastName, String email, String password,
                  String phoneNumber, String highestDegree, List<String> coursesOffered) {
 
-        super(firstName, lastName, email, password, phoneNumber);
+        super(firstName, lastName, email, password, phoneNumber, "Tutor");
         this.highestDegree = highestDegree;
         this.coursesOffered = coursesOffered;
     }

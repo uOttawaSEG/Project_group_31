@@ -1,3 +1,4 @@
+package com.example.test;
 
 public class Student extends User {
     private String programOfStudy;
@@ -5,7 +6,7 @@ public class Student extends User {
     public Student(String firstName, String lastName, String email, String password,
                    String phoneNumber, String programOfStudy){
 
-        super(firstName, lastName, email, password, phoneNumber);
+        super(firstName, lastName, email, password, phoneNumber, "Student");
         this.programOfStudy = programOfStudy;
     }
 
