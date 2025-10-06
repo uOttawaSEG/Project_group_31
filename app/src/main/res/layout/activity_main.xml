@@ -7,13 +7,60 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <Button
+        android:id="@+id/registerstudentbutton"
+        android:layout_width="272dp"
+        android:layout_height="59dp"
+        android:backgroundTint="#42969E"
+        android:text="Register as a Student"
+        app:cornerRadius="0dp"
+        tools:layout_editor_absoluteX="69dp"
+        tools:layout_editor_absoluteY="533dp" />
+
+    <Button
+        android:id="@+id/registertutorbutton"
+        android:layout_width="272dp"
+        android:layout_height="59dp"
+        android:backgroundTint="#42969E"
+        android:text="Register as a Tutor"
+        app:cornerRadius="0dp"
+        tools:layout_editor_absoluteX="69dp"
+        tools:layout_editor_absoluteY="603dp" />
+
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:id="@+id/title"
+        android:layout_width="238dp"
+        android:layout_height="144dp"
+        android:text="OTAMS"
+        app:autoSizeTextType="uniform"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.243" />
+
+    <Button
+        android:id="@+id/loginbutton"
+        android:layout_width="272dp"
+        android:layout_height="59dp"
+        android:backgroundTint="#42969E"
+        android:text="Log In"
+        app:cornerRadius="0dp"
+        tools:layout_editor_absoluteX="69dp"
+        tools:layout_editor_absoluteY="380dp" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="top" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="311dp"
+        android:layout_height="8dp"
+        android:background="?android:attr/listDivider"
+        tools:layout_editor_absoluteX="50dp"
+        tools:layout_editor_absoluteY="487dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
