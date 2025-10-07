@@ -11,8 +11,7 @@
         android:label="activity_main"
         tools:layout="@layout/activity_main" />
     <activity
-        android:id="@+id/loginActivity"
-        android:name="com.example.test.ui.login.LoginActivity"
-        android:label="activity_login"
-        tools:layout="@layout/activity_login" />
+        android:id="@+id/welcomeActivity"
+        android:name="com.example.test.ui.login.WelcomeActivity"
+        android:label="WelcomeActivity" />
 </navigation>
