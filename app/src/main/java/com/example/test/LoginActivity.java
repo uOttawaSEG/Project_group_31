@@ -13,6 +13,10 @@ public class LoginActivity extends AppCompatActivity {
     EditText etEmail, etPassword;
     Button btnLogin;
 
+    // --- Admin credentials ---
+    private static final String ADMIN_EMAIL = "admin@uottawa.ca";
+    private static final String ADMIN_PASSWORD = "admin123";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,20 +35,52 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
+            // ✅ Check for admin login first
+            if (email.equalsIgnoreCase(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
+                Administrator admin = new Administrator(
+                        "System", "Admin", ADMIN_EMAIL, ADMIN_PASSWORD, "000-000-0000"
+                );
+
+                Toast.makeText(this, "Welcome, Administrator!", Toast.LENGTH_SHORT).show();
+
+                // ✅ Send both role and email to WelcomeActivity
+                Intent adminIntent = new Intent(this, WelcomeActivity.class);
+                adminIntent.putExtra("role", "Administrator");
+                adminIntent.putExtra("email", ADMIN_EMAIL);
+                adminIntent.putExtra("adminName", admin.getFirstName());
+                startActivity(adminIntent);
+                finish();
+                return; // stop here — no need to check SharedPreferences
+            }
+
+            // 🔸 Regular user (Student/Tutor) login
             SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-            String role = prefs.getString(email, null);
+
+            String storedPassword = prefs.getString(email + "_password", null);
+            if (storedPassword == null || !storedPassword.equals(password)) {
+                Toast.makeText(this, "Invalid password!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String role = prefs.getString(email + "_role", null);
 
             if (role == null) {
                 Toast.makeText(this, "User not found! Register first.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // ✅ Save the current logged-in email
+            // Save the current logged-in email
             prefs.edit().putString("currentUserEmail", email).apply();
 
-            Intent i = new Intent(this, WelcomeActivity.class);
-            i.putExtra("role", role);
-            startActivity(i);
+            // ✅ Redirect based on role (keeping your structure)
+            Intent intent;
+            {
+                intent = new Intent(this, WelcomeActivity.class);
+            }
+
+            intent.putExtra("role", role);
+            intent.putExtra("email", email); // ✅ Send email too
+            startActivity(intent);
             finish();
         });
     }
