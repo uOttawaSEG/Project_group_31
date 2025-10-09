@@ -1,7 +1,10 @@
 package com.example.test;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class RegisterTutorActivity extends AppCompatActivity {
@@ -38,10 +41,19 @@ public class RegisterTutorActivity extends AppCompatActivity {
                 return;
             }
 
-            getSharedPreferences("UserPrefs", MODE_PRIVATE)
-                    .edit()
-                    .putString(email, "Tutor")
-                    .apply();
+            SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            //  Save tutor details using the same key pattern
+            editor.putString(email + "_email", email);
+            editor.putString(email + "_password", password);
+            editor.putString(email + "_role", "Tutor");
+            editor.putString(email + "_firstName", firstName);
+            editor.putString(email + "_lastName", lastName);
+            editor.putString(email + "_phone", phone);
+            editor.putString(email + "_degree", degree);
+            editor.putString(email + "_courses", courses);
+            editor.apply();
 
             Toast.makeText(this, "Tutor Registered Successfully!", Toast.LENGTH_SHORT).show();
             finish();
