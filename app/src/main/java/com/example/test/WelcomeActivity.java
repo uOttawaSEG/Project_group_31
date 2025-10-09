@@ -1,7 +1,10 @@
 package com.example.test;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class WelcomeActivity extends AppCompatActivity {
@@ -17,10 +20,20 @@ public class WelcomeActivity extends AppCompatActivity {
         tvWelcome = findViewById(R.id.tvWelcome);
         btnLogout = findViewById(R.id.btnLogout);
 
-        tvWelcome.setText("Welcome! Navigation not implemented yet.");
+        String role = getIntent().getStringExtra("role");
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String currentUserEmail = prefs.getString("currentUserEmail", "Unknown");
+
+        tvWelcome.setText("Welcome! You are logged in as " + role + ".\nEmail: " + currentUserEmail);
 
         btnLogout.setOnClickListener(v -> {
-            Toast.makeText(this, "Logout clicked, navigation not implemented yet.", Toast.LENGTH_SHORT).show();
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.remove("currentUserEmail");
+            editor.apply();
+
+            Intent i = new Intent(this, LoginActivity.class);
+            startActivity(i);
+            finish();
         });
     }
 }

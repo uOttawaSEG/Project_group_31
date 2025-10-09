@@ -24,7 +24,27 @@ public class RegisterTutorActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
 
         btnRegister.setOnClickListener(v -> {
-            Toast.makeText(this, "Register clicked, navigation not implemented yet.", Toast.LENGTH_SHORT).show();
+            String firstName = etFirstName.getText().toString().trim();
+            String lastName = etLastName.getText().toString().trim();
+            String email = etEmail.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
+            String phone = etPhone.getText().toString().trim();
+            String degree = etDegree.getText().toString().trim();
+            String courses = etCourses.getText().toString().trim();
+
+            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||
+                    password.isEmpty() || phone.isEmpty() || degree.isEmpty() || courses.isEmpty()) {
+                Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putString(email, "Tutor")
+                    .apply();
+
+            Toast.makeText(this, "Tutor Registered Successfully!", Toast.LENGTH_SHORT).show();
+            finish();
         });
     }
 }

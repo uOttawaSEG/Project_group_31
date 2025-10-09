@@ -1,5 +1,6 @@
 package com.example.test;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,17 +18,17 @@ public class MainActivity extends AppCompatActivity {
         btnRegisterStudent = findViewById(R.id.btnRegisterStudent);
         btnRegisterTutor = findViewById(R.id.btnRegisterTutor);
 
-        // No navigation yet
-        btnLogin.setOnClickListener(v -> {
-            // Placeholder, does nothing
-        });
+        // ✅ Navigation between screens
+        btnLogin.setOnClickListener(v ->
+                startActivity(new Intent(this, LoginActivity.class))
+        );
 
-        btnRegisterStudent.setOnClickListener(v -> {
-            // Placeholder, does nothing
-        });
+        btnRegisterStudent.setOnClickListener(v ->
+                startActivity(new Intent(this, RegisterStudentActivity.class))
+        );
 
-        btnRegisterTutor.setOnClickListener(v -> {
-            // Placeholder, does nothing
-        });
+        btnRegisterTutor.setOnClickListener(v ->
+                startActivity(new Intent(this, RegisterTutorActivity.class))
+        );
     }
 }
