@@ -47,7 +47,6 @@ public class LoginActivity extends AppCompatActivity {
                 Intent adminIntent = new Intent(this, WelcomeActivity.class);
                 adminIntent.putExtra("role", "Administrator");
                 adminIntent.putExtra("email", ADMIN_EMAIL);
-                adminIntent.putExtra("adminName", admin.getFirstName());
                 startActivity(adminIntent);
                 finish();
                 return; // stop here — no need to check SharedPreferences
