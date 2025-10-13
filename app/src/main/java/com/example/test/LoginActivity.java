@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -68,11 +69,28 @@ public class LoginActivity extends AppCompatActivity {
                         if (user != null) {
                             Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
 
-                            Intent intent = new Intent(this, WelcomeActivity.class);
-                            intent.putExtra("role", "Student"); // Default role for Firebase users
-                            intent.putExtra("email", email);
-                            startActivity(intent);
-                            finish();
+                            FirebaseDatabase.getInstance().getReference("tutors")
+                                    .child(user.getUid())
+                                    .get()
+                                    .addOnSuccessListener(snapshot -> {
+                                        Intent intent = new Intent(this, WelcomeActivity.class);
+                                        intent.putExtra("email", email);
+
+                                        if (snapshot.exists()) {
+                                            // Tutor found in database
+                                            intent.putExtra("role", "Tutor");
+                                        } else {
+                                            // Default fallback (student)
+                                            intent.putExtra("role", "Student");
+                                        }
+
+                                        startActivity(intent);
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(this, "Failed to fetch role: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+
                         }
                     })
                     .addOnFailureListener(e -> {
