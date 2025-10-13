@@ -1,22 +1,37 @@
 package com.example.test;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class RegisterStudentActivity extends AppCompatActivity {
 
-    EditText etFirstName, etLastName, etEmail, etPassword, etPhone, etProgram;
-    Button btnRegister;
+    // Declare Firebase and UI variables
+    private FirebaseAuth auth;
+    private DatabaseReference studentsRef;
+    private EditText etFirstName, etLastName, etEmail, etPassword, etPhone, etProgram;
+    private Button btnRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_student);
 
+        // Initialize Firebase
+        auth = FirebaseAuth.getInstance();
+        studentsRef = FirebaseDatabase.getInstance().getReference("students");
+
+        // Link UI components
         etFirstName = findViewById(R.id.etFirstName);
         etLastName = findViewById(R.id.etLastName);
         etEmail = findViewById(R.id.etEmail);
@@ -25,35 +40,55 @@ public class RegisterStudentActivity extends AppCompatActivity {
         etProgram = findViewById(R.id.etProgram);
         btnRegister = findViewById(R.id.btnRegister);
 
-        btnRegister.setOnClickListener(v -> {
-            String firstName = etFirstName.getText().toString().trim();
-            String lastName = etLastName.getText().toString().trim();
-            String email = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-            String phone = etPhone.getText().toString().trim();
-            String program = etProgram.getText().toString().trim();
+        btnRegister.setOnClickListener(v -> registerStudent());
+    }
 
-            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||
-                    password.isEmpty() || phone.isEmpty() || program.isEmpty()) {
-                Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
-                return;
-            }
+    private void registerStudent() {
+        String firstName = etFirstName.getText().toString().trim();
+        String lastName = etLastName.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+        String program = etProgram.getText().toString().trim();
 
-            SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
+        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||
+                password.isEmpty() || phone.isEmpty() || program.isEmpty()) {
+            Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Validate password length (Firebase requires at least 6 chars)
+        if (password.length() < 6) {
+            Toast.makeText(this, "Password must be at least 6 characters long", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Create Firebase Authentication user
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser user = auth.getCurrentUser();
+                    if (user != null) {
+                        String uid = user.getUid();
 
-            //  Save student details in the same key format that LoginActivity expects
-            editor.putString(email + "_email", email);
-            editor.putString(email + "_password", password);
-            editor.putString(email + "_role", "Student");
-            editor.putString(email + "_firstName", firstName);
-            editor.putString(email + "_lastName", lastName);
-            editor.putString(email + "_phone", phone);
-            editor.putString(email + "_program", program);
-            editor.apply();
+                        // Prepare student data
+                        Map<String, Object> studentData = new HashMap<>();
+                        studentData.put("firstName", firstName);
+                        studentData.put("lastName", lastName);
+                        studentData.put("email", email);
+                        studentData.put("phone", phone);
+                        studentData.put("program", program);
+                        studentData.put("role", "student");
 
-            Toast.makeText(this, "Student Registered Successfully!", Toast.LENGTH_SHORT).show();
-            finish();
-        });
+                        // Save to Realtime Database
+                        studentsRef.child(uid).setValue(studentData)
+                                .addOnSuccessListener(aVoid ->
+                                        Toast.makeText(this, "Student registered successfully!", Toast.LENGTH_SHORT).show()
+                                )
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(this, "Failed to save data: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                );
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Registration failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
 }

@@ -1,5 +1,6 @@
 package com.example.test;
-
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -18,7 +19,16 @@ public class MainActivity extends AppCompatActivity {
         btnRegisterStudent = findViewById(R.id.btnRegisterStudent);
         btnRegisterTutor = findViewById(R.id.btnRegisterTutor);
 
-        // ✅ Navigation between screens
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("test_message");
+        ref.setValue("Hello Firebase! ")
+                .addOnSuccessListener(aVoid ->
+                        System.out.println(" Firebase write successful!")
+                )
+                .addOnFailureListener(e ->
+                        System.out.println(" Firebase write failed: " + e.getMessage())
+                );
+        // Navigation between screens
         btnLogin.setOnClickListener(v ->
                 startActivity(new Intent(this, LoginActivity.class))
         );

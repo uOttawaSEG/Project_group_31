@@ -6,12 +6,19 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
     EditText etEmail, etPassword;
     Button btnLogin;
+
+    // --- Firebase ---
+    private FirebaseAuth auth;
 
     // --- Admin credentials ---
     private static final String ADMIN_EMAIL = "admin@uottawa.ca";
@@ -21,6 +28,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance();
 
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
@@ -35,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            // ✅ Check for admin login first
+            // --- Admin login ---
             if (email.equalsIgnoreCase(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
                 Administrator admin = new Administrator(
                         "System", "Admin", ADMIN_EMAIL, ADMIN_PASSWORD, "000-000-0000"
@@ -43,44 +53,63 @@ public class LoginActivity extends AppCompatActivity {
 
                 Toast.makeText(this, "Welcome, Administrator!", Toast.LENGTH_SHORT).show();
 
-                // ✅ Send both role and email to WelcomeActivity
                 Intent adminIntent = new Intent(this, WelcomeActivity.class);
                 adminIntent.putExtra("role", "Administrator");
                 adminIntent.putExtra("email", ADMIN_EMAIL);
                 startActivity(adminIntent);
                 finish();
-                return; // stop here — no need to check SharedPreferences
-            }
-
-            // 🔸 Regular user (Student/Tutor) login
-            SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-
-            String storedPassword = prefs.getString(email + "_password", null);
-            if (storedPassword == null || !storedPassword.equals(password)) {
-                Toast.makeText(this, "Invalid password!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            String role = prefs.getString(email + "_role", null);
+            // --- Try Firebase login first ---
+            auth.signInWithEmailAndPassword(email, password)
+                    .addOnSuccessListener(authResult -> {
+                        FirebaseUser user = auth.getCurrentUser();
+                        if (user != null) {
+                            Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
 
-            if (role == null) {
-                Toast.makeText(this, "User not found! Register first.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Save the current logged-in email
-            prefs.edit().putString("currentUserEmail", email).apply();
-
-            // ✅ Redirect based on role (keeping your structure)
-            Intent intent;
-            {
-                intent = new Intent(this, WelcomeActivity.class);
-            }
-
-            intent.putExtra("role", role);
-            intent.putExtra("email", email); // ✅ Send email too
-            startActivity(intent);
-            finish();
+                            Intent intent = new Intent(this, WelcomeActivity.class);
+                            intent.putExtra("role", "Student"); // Default role for Firebase users
+                            intent.putExtra("email", email);
+                            startActivity(intent);
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // If Firebase login fails, check SharedPreferences fallback
+                        checkSharedPreferencesLogin(email, password, e.getMessage());
+                    });
         });
+    }
+
+    private void checkSharedPreferencesLogin(String email, String password, String firebaseError) {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String storedPassword = prefs.getString(email + "_password", null);
+
+        if (storedPassword == null || !storedPassword.equals(password)) {
+            if (firebaseError != null && firebaseError.contains("password is invalid")) {
+                Toast.makeText(this, "Invalid password!", Toast.LENGTH_SHORT).show();
+            } else if (firebaseError != null && firebaseError.contains("no user record")) {
+                Toast.makeText(this, "User not found! Register first.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Login failed: " + firebaseError, Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        String role = prefs.getString(email + "_role", null);
+
+        if (role == null) {
+            Toast.makeText(this, "User not found! Register first.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        prefs.edit().putString("currentUserEmail", email).apply();
+
+        Intent intent = new Intent(this, WelcomeActivity.class);
+        intent.putExtra("role", role);
+        intent.putExtra("email", email);
+        startActivity(intent);
+        finish();
     }
 }
