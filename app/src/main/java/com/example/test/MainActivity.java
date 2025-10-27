@@ -22,23 +22,11 @@ public class MainActivity extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("test_message");
         ref.setValue("Hello Firebase! ")
-                .addOnSuccessListener(aVoid ->
-                        System.out.println(" Firebase write successful!")
-                )
-                .addOnFailureListener(e ->
-                        System.out.println(" Firebase write failed: " + e.getMessage())
-                );
-        // Navigation between screens
-        btnLogin.setOnClickListener(v ->
-                startActivity(new Intent(this, LoginActivity.class))
-        );
+                .addOnSuccessListener(aVoid -> System.out.println(" Firebase write successful!"))
+                .addOnFailureListener(e -> System.out.println(" Firebase write failed: " + e.getMessage()));
 
-        btnRegisterStudent.setOnClickListener(v ->
-                startActivity(new Intent(this, RegisterStudentActivity.class))
-        );
-
-        btnRegisterTutor.setOnClickListener(v ->
-                startActivity(new Intent(this, RegisterTutorActivity.class))
-        );
+        btnLogin.setOnClickListener(v -> startActivity(new Intent(this, LoginActivity.class)));
+        btnRegisterStudent.setOnClickListener(v -> startActivity(new Intent(this, RegisterStudentActivity.class)));
+        btnRegisterTutor.setOnClickListener(v -> startActivity(new Intent(this, RegisterTutorActivity.class)));
     }
 }

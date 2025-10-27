@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#EEEEEE"
+    android:layout_marginBottom="8dp">
+
+    <!-- Name and role -->
+    <TextView
+        android:id="@+id/tvNameRole"
+        android:text="Jane Doe — Student"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <!-- Email + phone -->
+    <TextView
+        android:id="@+id/tvEmailPhone"
+        android:text="jane@x.com • 555-0000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <!-- Submitted at -->
+    <TextView
+        android:id="@+id/tvSubmittedAt"
+        android:text="Submitted: 2025-10-27 14:03"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"/>
+
+    <!-- Student-only: Program of Study -->
+    <TextView
+        android:id="@+id/tvProgram"
+        android:text="Program: Computer Science"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="4dp"/>
+
+    <!-- Tutor-only: Degree -->
+    <TextView
+        android:id="@+id/tvDegree"
+        android:text="Degree: MSc Mathematics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="4dp"/>
+
+    <!-- Tutor-only: Courses Offered -->
+    <TextView
+        android:id="@+id/tvCourses"
+        android:text="Courses: MAT1320, MAT1322"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="2dp"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btnApprove"
+            android:text="Approve"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btnReject"
+            android:text="Reject"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</LinearLayout>
