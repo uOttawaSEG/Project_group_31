@@ -13,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.example.test.RegistrationRequest;
 
 public class RegisterStudentActivity extends AppCompatActivity {
 
@@ -79,9 +80,24 @@ public class RegisterStudentActivity extends AppCompatActivity {
 
                         // Save to Realtime Database
                         studentsRef.child(uid).setValue(studentData)
-                                .addOnSuccessListener(aVoid ->
-                                        Toast.makeText(this, "Student registered successfully!", Toast.LENGTH_SHORT).show()
-                                )
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Student registered successfully!", Toast.LENGTH_SHORT).show();
+
+                                    //Admin Approval
+                                    RegistrationRequest request = new RegistrationRequest(firstName, lastName, email, phone, "Student");
+
+                                    //Need this because char dot causes errors in Firebase
+                                    String dotKey = email.replace(".", "_");
+
+                                    FirebaseDatabase.getInstance().getReference("registrationRequests").child(dotKey).setValue(request)
+                                            .addOnSuccessListener(r ->
+                                                    Toast.makeText(this, "Registration submitted for admin approval", Toast.LENGTH_SHORT).show()
+                                            )
+                                            .addOnFailureListener(e ->
+                                                    Toast.makeText(this, "Request failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+                                })
+
                                 .addOnFailureListener(e ->
                                         Toast.makeText(this, "Failed to save data: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                                 );
