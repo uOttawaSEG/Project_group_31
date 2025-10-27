@@ -27,7 +27,7 @@ public class Administrator extends User {
                 && this.getPassword().equals(enteredPassword);
     }
 
-    // Approve a user registration (placeholder for database logic)
+    // Approve a user registration
     public void approveUser(RegistrationRequest request) {
         if (request == null) {
             return;
@@ -39,9 +39,15 @@ public class Administrator extends User {
 
     }
 
-    // Reject a user registration (placeholder for database logic)
-    public void rejectUser(User user) {
-        System.out.println("Administrator rejected user: " + user.getEmail());
+    // Reject a user registration
+    public void rejectUser(RegistrationRequest request) {
+        if (request == null) {
+            return;
+        }
+
+        String dotKey = request.getEmail().replace(".", "_");
+        requestsReference.child(dotKey).child("status").setValue("REJECTED");
+        System.out.println("Administrator rejected user: " + request.getEmail());
     }
 
     // --- Getters and setters ---
