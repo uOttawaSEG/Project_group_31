@@ -1,9 +1,15 @@
 package com.example.test;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class Administrator extends User {
 
     // Optional: indicates whether this admin is the main system admin
     private boolean superAdmin;
+
+    //Creates a Firebase reference to registration requests
+    private final DatabaseReference requests = FirebaseDatabase.getInstance().getReference("registrationRequests");
 
     // Constructor — uses the parent User constructor
     public Administrator(String firstName, String lastName, String email,
