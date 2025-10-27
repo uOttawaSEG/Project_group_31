@@ -9,7 +9,7 @@ public class Administrator extends User {
     private boolean superAdmin;
 
     //Creates a Firebase reference to registration requests
-    private final DatabaseReference requests = FirebaseDatabase.getInstance().getReference("registrationRequests");
+    private final DatabaseReference requestsReference = FirebaseDatabase.getInstance().getReference("registrationRequests");
 
     // Constructor — uses the parent User constructor
     public Administrator(String firstName, String lastName, String email,
@@ -28,9 +28,15 @@ public class Administrator extends User {
     }
 
     // Approve a user registration (placeholder for database logic)
-    public void approveUser(User user) {
-        System.out.println("Administrator approved user: " + user.getEmail());
-        // Later you’ll replace this with Firebase/SQLite logic
+    public void approveUser(RegistrationRequest request) {
+        if (request == null) {
+            return;
+        }
+
+        String dotKey = request.getEmail().replace(".","_");
+        requestsReference.child(dotKey).child("status").setValue("Approved");
+        System.out.println("Administrator approved user: " + request.getEmail());
+
     }
 
     // Reject a user registration (placeholder for database logic)
