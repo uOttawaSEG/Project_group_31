@@ -2,6 +2,7 @@ package com.example.test;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -17,92 +18,95 @@ import java.util.Map;
 
 public class RegisterTutorActivity extends AppCompatActivity {
 
-    private FirebaseAuth auth;
-    private DatabaseReference tutorsRef;
+    private FirebaseAuth mAuth;
+    private DatabaseReference databaseRef;
 
-    EditText etFirstName, etLastName, etEmail, etPassword, etPhone, etDegree, etCourses;
-    Button btnRegister;
+    EditText firstName, lastName, email, password, phone, degree, courses;
+    Button registerBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_tutor);
 
-        auth = FirebaseAuth.getInstance();
-        tutorsRef = FirebaseDatabase.getInstance().getReference("tutors");
+        mAuth = FirebaseAuth.getInstance();
+        databaseRef = FirebaseDatabase.getInstance().getReference("tutors");
 
-        etFirstName = findViewById(R.id.etFirstName);
-        etLastName  = findViewById(R.id.etLastName);
-        etEmail     = findViewById(R.id.etEmail);
-        etPassword  = findViewById(R.id.etPassword);
-        etPhone     = findViewById(R.id.etPhone);
-        etDegree    = findViewById(R.id.etDegree);
-        etCourses   = findViewById(R.id.etCourses);
-        btnRegister = findViewById(R.id.btnRegister);
+        firstName = findViewById(R.id.etFirstName);
+        lastName = findViewById(R.id.etLastName);
+        email = findViewById(R.id.etEmail);
+        password = findViewById(R.id.etPassword);
+        phone = findViewById(R.id.etPhone);
+        degree = findViewById(R.id.etDegree);
+        courses = findViewById(R.id.etCourses);
+        registerBtn = findViewById(R.id.btnRegister);
 
-        btnRegister.setOnClickListener(v -> registerTutor());
+        registerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                registerTutor();
+            }
+        });
     }
 
     private void registerTutor() {
-        String firstName = etFirstName.getText().toString().trim();
-        String lastName  = etLastName.getText().toString().trim();
-        String email     = etEmail.getText().toString().trim();
-        String password  = etPassword.getText().toString().trim();
-        String phone     = etPhone.getText().toString().trim();
-        String degree    = etDegree.getText().toString().trim();
-        String courses   = etCourses.getText().toString().trim();
+        String fName = firstName.getText().toString().trim();
+        String lName = lastName.getText().toString().trim();
+        String em = email.getText().toString().trim();
+        String pw = password.getText().toString().trim();
+        String ph = phone.getText().toString().trim();
+        String deg = degree.getText().toString().trim();
+        String crs = courses.getText().toString().trim();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||
-                password.isEmpty() || phone.isEmpty() || degree.isEmpty() || courses.isEmpty()) {
+        if (fName.isEmpty() || lName.isEmpty() || em.isEmpty() ||
+                pw.isEmpty() || ph.isEmpty() || deg.isEmpty() || crs.isEmpty()) {
             Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        auth.createUserWithEmailAndPassword(email, password)
+        mAuth.createUserWithEmailAndPassword(em, pw)
                 .addOnSuccessListener(authResult -> {
-                    FirebaseUser user = auth.getCurrentUser();
+                    FirebaseUser user = mAuth.getCurrentUser();
                     if (user != null) {
                         String uid = user.getUid();
 
-                        Map<String, Object> tutorData = new HashMap<>();
-                        tutorData.put("firstName", firstName);
-                        tutorData.put("lastName", lastName);
-                        tutorData.put("email", email);
-                        tutorData.put("phone", phone);
-                        tutorData.put("highestdegree", degree);
-                        tutorData.put("coursesOffered", courses);
-                        tutorData.put("role", "Tutor");
-                        tutorData.put("status", "Pending");
+                        Map<String, Object> tutorMap = new HashMap<>();
+                        tutorMap.put("firstName", fName);
+                        tutorMap.put("lastName", lName);
+                        tutorMap.put("email", em);
+                        tutorMap.put("phone", ph);
+                        tutorMap.put("highestdegree", deg);
+                        tutorMap.put("coursesOffered", crs);
+                        tutorMap.put("role", "Tutor");
+                        tutorMap.put("status", "Pending");
 
-                        tutorsRef.child(uid).setValue(tutorData)
+                        databaseRef.child(uid).setValue(tutorMap)
                                 .addOnSuccessListener(aVoid -> {
-                                    // legacy local cache preserved
                                     SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                                     SharedPreferences.Editor editor = prefs.edit();
-                                    editor.putString(email + "_email", email);
-                                    editor.putString(email + "_password", password);
-                                    editor.putString(email + "_role", "Tutor");
-                                    editor.putString(email + "_firstName", firstName);
-                                    editor.putString(email + "_lastName", lastName);
-                                    editor.putString(email + "_phone", phone);
-                                    editor.putString(email + "_degree", degree);
-                                    editor.putString(email + "_courses", courses);
+                                    editor.putString(em + "_email", em);
+                                    editor.putString(em + "_password", pw);
+                                    editor.putString(em + "_role", "Tutor");
+                                    editor.putString(em + "_firstName", fName);
+                                    editor.putString(em + "_lastName", lName);
+                                    editor.putString(em + "_phone", ph);
+                                    editor.putString(em + "_degree", deg);
+                                    editor.putString(em + "_courses", crs);
                                     editor.apply();
 
-                                    // Create PENDING admin approval request with degree + courses list
-                                    RegistrationRequest request = new RegistrationRequest(firstName, lastName, email, phone, "Tutor");
-                                    request.setHighestDegree(degree);
+                                    RegistrationRequest request = new RegistrationRequest(fName, lName, em, ph, "Tutor");
+                                    request.setHighestDegree(deg);
 
-                                    List<String> coursesList = new ArrayList<>();
-                                    for (String c : courses.split(",")) {
-                                        String t = c.trim();
-                                        if (!t.isEmpty()) coursesList.add(t);
+                                    List<String> coursesArrayList = new ArrayList<>();
+                                    for (String s : crs.split(",")) {
+                                        String trimmedS = s.trim();
+                                        if (!trimmedS.isEmpty()) coursesArrayList.add(trimmedS);
                                     }
-                                    request.setCoursesOffered(coursesList);
+                                    request.setCoursesOffered(coursesArrayList);
 
-                                    String dotKey = email.replace(".", "_");
+                                    String safeEmail = em.replace(".", "_");
                                     FirebaseDatabase.getInstance().getReference("registrationRequests")
-                                            .child(dotKey)
+                                            .child(safeEmail)
                                             .setValue(request)
                                             .addOnSuccessListener(x ->
                                                     Toast.makeText(this, "Registration submitted for admin approval", Toast.LENGTH_SHORT).show()
