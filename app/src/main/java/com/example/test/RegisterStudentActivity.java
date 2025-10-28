@@ -67,8 +67,9 @@ public class RegisterStudentActivity extends AppCompatActivity {
                         studentData.put("lastName", lastName);
                         studentData.put("email", email);
                         studentData.put("phone", phone);
-                        studentData.put("program", program);
-                        studentData.put("role", "student");
+                        studentData.put("programOfStudy", program);
+                        studentData.put("role", "Student");
+                        studentData.put("status", "Pending");
 
                         studentsRef.child(uid).setValue(studentData)
                                 .addOnSuccessListener(aVoid -> {

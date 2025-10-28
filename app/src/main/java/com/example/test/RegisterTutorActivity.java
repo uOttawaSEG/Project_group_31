@@ -69,9 +69,10 @@ public class RegisterTutorActivity extends AppCompatActivity {
                         tutorData.put("lastName", lastName);
                         tutorData.put("email", email);
                         tutorData.put("phone", phone);
-                        tutorData.put("degree", degree);
-                        tutorData.put("courses", courses);
-                        tutorData.put("role", "tutor");
+                        tutorData.put("highestdegree", degree);
+                        tutorData.put("coursesOffered", courses);
+                        tutorData.put("role", "Tutor");
+                        tutorData.put("status", "Pending");
 
                         tutorsRef.child(uid).setValue(tutorData)
                                 .addOnSuccessListener(aVoid -> {
