@@ -3,6 +3,7 @@ package com.example.test;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -10,50 +11,51 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class WelcomeActivity extends AppCompatActivity {
 
-    TextView tvWelcome;
-    Button btnLogout;
+    TextView welcomeMessage;
+    Button logoutButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
-        tvWelcome = findViewById(R.id.tvWelcome);
-        btnLogout = findViewById(R.id.btnLogout);
+        welcomeMessage = findViewById(R.id.tvWelcome);
+        logoutButton = findViewById(R.id.btnLogout);
 
-        // Retrieve data passed from LoginActivity
         Intent intent = getIntent();
         String role = intent.getStringExtra("role");
-        String emailFromIntent = intent.getStringExtra("email");
+        String emailFromLogin = intent.getStringExtra("email");
 
-        // Retrieve SharedPreferences (for regular users)
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String currentUserEmail = prefs.getString("currentUserEmail", null);
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String savedEmail = sp.getString("currentUserEmail", null);
 
-        // Determine which email to display
-        String displayEmail;
-        if (emailFromIntent != null && !emailFromIntent.isEmpty()) {
-            displayEmail = emailFromIntent;  // For Administrator
-        } else if (currentUserEmail != null) {
-            displayEmail = currentUserEmail; // For Student/Tutor
-        } else {
-            displayEmail = "Unknown";
+        String emailToShow = "Unknown";
+
+        if (emailFromLogin != null) {
+            emailToShow = emailFromLogin;
+        } else if (savedEmail != null) {
+            emailToShow = savedEmail;
         }
 
-        if (role == null) role = "Unknown";
 
-        // Display combined message on one TextView
-        tvWelcome.setText("Welcome! You are logged in as " + role + ".\nEmail: " + displayEmail);
+        if (role == null) {
+            role = "Unknown";
+        }
 
-        // Log Out button
-        btnLogout.setOnClickListener(v -> {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.remove("currentUserEmail");
-            editor.apply();
+        welcomeMessage.setText("Welcome! You are logged in as " + role + ".\nEmail: " + emailToShow);
 
-            Intent i = new Intent(this, LoginActivity.class);
-            startActivity(i);
-            finish();
+
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences.Editor editor = sp.edit();
+                editor.remove("currentUserEmail");
+                editor.apply();
+
+                Intent i = new Intent(WelcomeActivity.this, LoginActivity.class);
+                startActivity(i);
+                finish();
+            }
         });
     }
 }
