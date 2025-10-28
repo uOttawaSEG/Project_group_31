@@ -13,99 +13,128 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.VH> {
-    interface Listener {
+class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHolder> {
+
+    interface RequestAdapterListener {
         void onApprove(RegistrationRequest r);
         void onReject(RegistrationRequest r);
     }
 
-    enum Mode { PENDING, REJECTED }
+    private List<RegistrationRequest> requestList = new ArrayList<>();
+    private final RequestAdapterListener myListener;
+    private final boolean isPending;
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
-    private final List<RegistrationRequest> data = new ArrayList<>();
-    private final Listener listener;
-    private final Mode mode;
-    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-
-    RequestAdapter(Mode mode, Listener listener) {
-        this.mode = mode;
-        this.listener = listener;
+    RequestAdapter(boolean isPending, RequestAdapterListener listener) {
+        this.isPending = isPending;
+        this.myListener = listener;
     }
 
-    void submit(List<RegistrationRequest> items) {
-        data.clear();
-        if (items != null) data.addAll(items);
+    void setRequests(List<RegistrationRequest> items) {
+        requestList.clear();
+        if (items != null) {
+            requestList.addAll(items);
+        }
         notifyDataSetChanged();
     }
 
-    @NonNull @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_request, parent, false);
-        return new VH(v);
+    @NonNull
+    @Override
+    public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_request, parent, false);
+        return new RequestViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int pos) {
-        RegistrationRequest r = data.get(pos);
+    public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
+        RegistrationRequest currentRequest = requestList.get(position);
 
-        h.nameRole.setText(r.getFirstName() + " " + r.getLastName() + " — " + r.getRole());
-        h.emailPhone.setText(r.getEmail() + " • " + r.getPhone());
-        h.submittedAt.setText("Submitted: " + sdf.format(new Date(r.getSubmittedAt())));
+        holder.name.setText(currentRequest.getFirstName() + " " + currentRequest.getLastName() + " — " + currentRequest.getRole());
+        holder.emailPhone.setText(currentRequest.getEmail() + " • " + currentRequest.getPhone());
+        holder.date.setText("Submitted: " + simpleDateFormat.format(new Date(currentRequest.getSubmittedAt())));
 
-        if ("Student".equalsIgnoreCase(r.getRole())) {
-            String program = r.getProgramOfStudy();
+        if ("Student".equalsIgnoreCase(currentRequest.getRole())) {
+            String program = currentRequest.getProgramOfStudy();
             if (program != null && !program.trim().isEmpty()) {
-                h.program.setText("Program: " + program);
-                h.program.setVisibility(View.VISIBLE);
-            } else h.program.setVisibility(View.GONE);
+                holder.program.setText("Program: " + program);
+                holder.program.setVisibility(View.VISIBLE);
+            } else {
+                holder.program.setVisibility(View.GONE);
+            }
+            holder.degree.setVisibility(View.GONE);
+            holder.courses.setVisibility(View.GONE);
 
-            h.degree.setVisibility(View.GONE);
-            h.courses.setVisibility(View.GONE);
-        } else if ("Tutor".equalsIgnoreCase(r.getRole())) {
-            String degree = r.getHighestDegree();
-            List<String> courses = r.getCoursesOffered();
+        } else if ("Tutor".equalsIgnoreCase(currentRequest.getRole())) {
+            String degree = currentRequest.getHighestDegree();
+            List<String> courses = currentRequest.getCoursesOffered();
 
             if (degree != null && !degree.trim().isEmpty()) {
-                h.degree.setText("Degree: " + degree);
-                h.degree.setVisibility(View.VISIBLE);
-            } else h.degree.setVisibility(View.GONE);
+                holder.degree.setText("Degree: " + degree);
+                holder.degree.setVisibility(View.VISIBLE);
+            } else {
+                holder.degree.setVisibility(View.GONE);
+            }
 
             if (courses != null && !courses.isEmpty()) {
-                String joined = android.text.TextUtils.join(", ", courses);
-                h.courses.setText("Courses: " + joined);
-                h.courses.setVisibility(View.VISIBLE);
-            } else h.courses.setVisibility(View.GONE);
-
-            h.program.setVisibility(View.GONE);
+                // Manually build the string
+                StringBuilder coursesString = new StringBuilder();
+                for (int i = 0; i < courses.size(); i++) {
+                    coursesString.append(courses.get(i));
+                    if (i < courses.size() - 1) {
+                        coursesString.append(", ");
+                    }
+                }
+                holder.courses.setText("Courses: " + coursesString.toString());
+                holder.courses.setVisibility(View.VISIBLE);
+            } else {
+                holder.courses.setVisibility(View.GONE);
+            }
+            holder.program.setVisibility(View.GONE);
         } else {
-            h.program.setVisibility(View.GONE);
-            h.degree.setVisibility(View.GONE);
-            h.courses.setVisibility(View.GONE);
+            holder.program.setVisibility(View.GONE);
+            holder.degree.setVisibility(View.GONE);
+            holder.courses.setVisibility(View.GONE);
         }
 
-        h.btnApprove.setOnClickListener(v -> listener.onApprove(r));
-        if (mode == Mode.PENDING) {
-            h.btnReject.setVisibility(View.VISIBLE);
-            h.btnReject.setOnClickListener(v -> listener.onReject(r));
+        holder.approveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myListener.onApprove(currentRequest);
+            }
+        });
+
+        if (isPending) {
+            holder.rejectButton.setVisibility(View.VISIBLE);
+            holder.rejectButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    myListener.onReject(currentRequest);
+                }
+            });
         } else {
-            h.btnReject.setVisibility(View.GONE);
+            holder.rejectButton.setVisibility(View.GONE);
         }
     }
 
-    @Override public int getItemCount() { return data.size(); }
+    @Override
+    public int getItemCount() {
+        return requestList.size();
+    }
 
-    static class VH extends RecyclerView.ViewHolder {
-        TextView nameRole, emailPhone, submittedAt, program, degree, courses;
-        Button btnApprove, btnReject;
-        VH(@NonNull View itemView) {
+    static class RequestViewHolder extends RecyclerView.ViewHolder {
+        TextView name, emailPhone, date, program, degree, courses;
+        Button approveButton, rejectButton;
+
+        RequestViewHolder(@NonNull View itemView) {
             super(itemView);
-            nameRole   = itemView.findViewById(R.id.tvNameRole);
+            name = itemView.findViewById(R.id.tvNameRole);
             emailPhone = itemView.findViewById(R.id.tvEmailPhone);
-            submittedAt= itemView.findViewById(R.id.tvSubmittedAt);
-            program    = itemView.findViewById(R.id.tvProgram);
-            degree     = itemView.findViewById(R.id.tvDegree);
-            courses    = itemView.findViewById(R.id.tvCourses);
-            btnApprove = itemView.findViewById(R.id.btnApprove);
-            btnReject  = itemView.findViewById(R.id.btnReject);
+            date = itemView.findViewById(R.id.tvSubmittedAt);
+            program = itemView.findViewById(R.id.tvProgram);
+            degree = itemView.findViewById(R.id.tvDegree);
+            courses = itemView.findViewById(R.id.tvCourses);
+            approveButton = itemView.findViewById(R.id.btnApprove);
+            rejectButton = itemView.findViewById(R.id.btnReject);
         }
     }
 }
