@@ -6,7 +6,7 @@ import com.google.firebase.database.FirebaseDatabase;
 public class Administrator extends User {
 
     private boolean superAdmin;
-    private final DatabaseReference requestsReference = FirebaseDatabase.getInstance().getReference("registrationRequests");
+    private final DatabaseReference reqRef = FirebaseDatabase.getInstance().getReference("registrationRequests");
 
     public Administrator(String firstName, String lastName, String email,
                          String password, String phoneNumber) {
@@ -19,18 +19,18 @@ public class Administrator extends User {
                 && this.getPassword().equals(enteredPassword);
     }
 
-    public void approveUser(RegistrationRequest request) {
-        if (request == null) return;
-        String dotKey = request.getEmail().replace(".","_");
-        requestsReference.child(dotKey).child("status").setValue("APPROVED");
-        System.out.println("Administrator approved user: " + request.getEmail());
+    public void approveUser(RegistrationRequest r) {
+        if (r == null) return;
+        String emailKey = r.getEmail().replace(".","_");
+        reqRef.child(emailKey).child("status").setValue("APPROVED");
+        System.out.println("Administrator approved user: " + r.getEmail());
     }
 
-    public void rejectUser(RegistrationRequest request) {
-        if (request == null) return;
-        String dotKey = request.getEmail().replace(".", "_");
-        requestsReference.child(dotKey).child("status").setValue("REJECTED");
-        System.out.println("Administrator rejected user: " + request.getEmail());
+    public void rejectUser(RegistrationRequest r) {
+        if (r == null) return;
+        String emailKey = r.getEmail().replace(".", "_");
+        reqRef.child(emailKey).child("status").setValue("REJECTED");
+        System.out.println("Administrator rejected user: " + r.getEmail());
     }
 
     public boolean isSuperAdmin() { return superAdmin; }
