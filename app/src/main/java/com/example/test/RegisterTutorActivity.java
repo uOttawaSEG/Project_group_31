@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Handles tutor registration by creating a Firebase auth account,
+ * storing tutor data in the database and local storage, and submitting a registration request for admin approval.
+ */
 public class RegisterTutorActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -29,9 +33,11 @@ public class RegisterTutorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_tutor);
 
+        // Initialize Firebase authentication and database reference
         mAuth = FirebaseAuth.getInstance();
         databaseRef = FirebaseDatabase.getInstance().getReference("tutors");
 
+        // Get references to input fields
         firstName = findViewById(R.id.etFirstName);
         lastName = findViewById(R.id.etLastName);
         email = findViewById(R.id.etEmail);
@@ -41,6 +47,7 @@ public class RegisterTutorActivity extends AppCompatActivity {
         courses = findViewById(R.id.etCourses);
         registerBtn = findViewById(R.id.btnRegister);
 
+        // Set up register button click handler
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,7 +56,12 @@ public class RegisterTutorActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Validates input, creates a Firebase auth account, saves tutor data to the database and local storage,
+     * and submits a registration request for admin approval.
+     */
     private void registerTutor() {
+        // Get and trim input values
         String fName = firstName.getText().toString().trim();
         String lName = lastName.getText().toString().trim();
         String em = email.getText().toString().trim();
@@ -58,18 +70,21 @@ public class RegisterTutorActivity extends AppCompatActivity {
         String deg = degree.getText().toString().trim();
         String crs = courses.getText().toString().trim();
 
+        // Validate that all fields are filled
         if (fName.isEmpty() || lName.isEmpty() || em.isEmpty() ||
                 pw.isEmpty() || ph.isEmpty() || deg.isEmpty() || crs.isEmpty()) {
             Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Create Firebase authentication account
         mAuth.createUserWithEmailAndPassword(em, pw)
                 .addOnSuccessListener(authResult -> {
                     FirebaseUser user = mAuth.getCurrentUser();
                     if (user != null) {
                         String uid = user.getUid();
 
+                        // Prepare tutor data map
                         Map<String, Object> tutorMap = new HashMap<>();
                         tutorMap.put("firstName", fName);
                         tutorMap.put("lastName", lName);
@@ -80,8 +95,10 @@ public class RegisterTutorActivity extends AppCompatActivity {
                         tutorMap.put("role", "Tutor");
                         tutorMap.put("status", "Pending");
 
+                        // Save tutor data to database using their UID as the key
                         databaseRef.child(uid).setValue(tutorMap)
                                 .addOnSuccessListener(aVoid -> {
+                                    // Also save tutor data to local SharedPreferences as backup
                                     SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                                     SharedPreferences.Editor editor = prefs.edit();
                                     editor.putString(em + "_email", em);
@@ -94,9 +111,11 @@ public class RegisterTutorActivity extends AppCompatActivity {
                                     editor.putString(em + "_courses", crs);
                                     editor.apply();
 
+                                    // Create registration request for admin approval
                                     RegistrationRequest request = new RegistrationRequest(fName, lName, em, ph, "Tutor");
                                     request.setHighestDegree(deg);
 
+                                    // Parse comma-separated courses into a list
                                     List<String> coursesArrayList = new ArrayList<>();
                                     for (String s : crs.split(",")) {
                                         String trimmedS = s.trim();
@@ -104,7 +123,10 @@ public class RegisterTutorActivity extends AppCompatActivity {
                                     }
                                     request.setCoursesOffered(coursesArrayList);
 
+                                    // Convert email to Firebase-safe key
                                     String safeEmail = em.replace(".", "_");
+
+                                    // Submit registration request to admin queue
                                     FirebaseDatabase.getInstance().getReference("registrationRequests")
                                             .child(safeEmail)
                                             .setValue(request)

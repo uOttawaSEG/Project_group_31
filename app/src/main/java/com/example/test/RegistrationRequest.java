@@ -3,26 +3,41 @@ package com.example.test;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Model class representing a user registration request.
+ * Stores user information and tracks the approval status and admin decision.
+ * Used for both student and tutor registrations.
+ */
 public class RegistrationRequest {
+    // Common fields for all users
     private String firstName;
     private String lastName;
     private String email;
     private String phone;
-    private String role;
-    private String status;
-    private long submittedAt;
-    private Long decidedAt;
-    private String decidedByAdminId;
-    private String rejectionReason;
+    private String role; // "Student" or "Tutor"
+    private String status; // "PENDING", "APPROVED", or "REJECTED"
+    private long submittedAt; // Timestamp when request was submitted
+    private Long decidedAt; // Timestamp when admin made decision (null if pending)
+    private String decidedByAdminId; // Email of admin who made decision
+    private String rejectionReason; // Reason for rejection (if applicable)
 
+    // Student-specific field
     private String programOfStudy;
 
+    // Tutor-specific fields
     private String highestDegree;
     private List<String> coursesOffered;
 
+    /**
+     * Empty constructor required for Firebase data deserialization.
+     */
     public RegistrationRequest() {
     }
 
+    /**
+     * Constructor to create a new registration request.
+     * Status is automatically set to "PENDING" and submission time is recorded.
+     */
     public RegistrationRequest(String firstName, String lastName, String email, String phone, String role) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -34,6 +49,7 @@ public class RegistrationRequest {
         this.coursesOffered = new ArrayList<>();
     }
 
+    // Getters and setters for all fields
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
@@ -69,7 +85,7 @@ public class RegistrationRequest {
 
     public String getHighestDegree() { return highestDegree; }
     public void setHighestDegree(String highestDegree) { this.highestDegree = highestDegree; }
-    
+
     public List<String> getCoursesOffered() { return coursesOffered; }
     public void setCoursesOffered(List<String> coursesOffered) { this.coursesOffered = coursesOffered; }
 }
