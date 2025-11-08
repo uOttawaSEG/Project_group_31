@@ -1,5 +1,8 @@
-package com.example.test;
+package com.example.test.sharedUserInterface;
 
+import com.example.test.R;
+import com.example.test.student.RegisterStudentActivity;
+import com.example.test.tutor.RegisterTutorActivity;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import android.content.Intent;
@@ -24,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
         registerTutorBtn = findViewById(R.id.btnRegisterTutor);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("test_message");
-        ref.setValue("Hello Firebase! ");
 
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override

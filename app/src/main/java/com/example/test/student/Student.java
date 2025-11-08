@@ -1,4 +1,6 @@
-package com.example.test;
+package com.example.test.student;
+
+import com.example.test.sharedfiles.model.User;
 
 public class Student extends User {
     private String programOfStudy;

@@ -1,4 +1,6 @@
-package com.example.test;
+package com.example.test.tutor;
+
+import com.example.test.sharedfiles.model.User;
 
 import java.util.List;
 

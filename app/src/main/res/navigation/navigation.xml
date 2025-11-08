@@ -7,11 +7,11 @@
 
     <activity
         android:id="@+id/mainActivity"
-        android:name="com.example.test.MainActivity"
+        android:name="com.example.test.sharedUserInterface.MainActivity"
         android:label="activity_main"
         tools:layout="@layout/activity_main" />
     <activity
         android:id="@+id/welcomeActivity"
-        android:name="com.example.test.WelcomeActivity"
+        android:name="com.example.test.sharedUserInterface.WelcomeActivity"
         android:label="WelcomeActivity" />
 </navigation>

@@ -1,4 +1,4 @@
-package com.example.test;
+package com.example.test.sharedUserInterface;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.test.R;
 
 public class WelcomeActivity extends AppCompatActivity {
 

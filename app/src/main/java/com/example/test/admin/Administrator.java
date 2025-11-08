@@ -1,5 +1,7 @@
-package com.example.test;
+package com.example.test.admin;
 
+import com.example.test.sharedfiles.model.RegistrationRequest;
+import com.example.test.sharedfiles.model.User;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 

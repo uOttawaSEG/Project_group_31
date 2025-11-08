@@ -1,11 +1,17 @@
-package com.example.test;
+package com.example.test.admin;
 
 import android.os.Bundle;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.test.R;
+import com.example.test.sharedfiles.adapters.RequestAdapter;
+import com.example.test.sharedfiles.model.RegistrationRequest;
 import com.google.firebase.database.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +25,9 @@ public class AdminInboxActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_inbox);
 
+        // Ensure that your XML file is named: activity_admin_inbox.xml
+        // and it contains RecyclerViews with IDs: rvPending and rvRejected
+
         databaseRef = FirebaseDatabase.getInstance().getReference("registrationRequests");
 
         RecyclerView rvPending = findViewById(R.id.rvPending);
@@ -28,13 +37,27 @@ public class AdminInboxActivity extends AppCompatActivity {
         rvRejected.setLayoutManager(new LinearLayoutManager(this));
 
         pendingAdapter = new RequestAdapter(true, new RequestAdapter.RequestAdapterListener() {
-            @Override public void onApprove(RegistrationRequest r) { approve(r); }
-            @Override public void onReject(RegistrationRequest r) { reject(r); }
+            @Override
+            public void onApprove(RegistrationRequest r) {
+                approve(r);
+            }
+
+            @Override
+            public void onReject(RegistrationRequest r) {
+                reject(r);
+            }
         });
 
         rejectedAdapter = new RequestAdapter(false, new RequestAdapter.RequestAdapterListener() {
-            @Override public void onApprove(RegistrationRequest r) { approve(r); }
-            @Override public void onReject(RegistrationRequest r) { }
+            @Override
+            public void onApprove(RegistrationRequest r) {
+                approve(r);
+            }
+
+            @Override
+            public void onReject(RegistrationRequest r) {
+                // Do nothing here for already rejected requests
+            }
         });
 
         rvPending.setAdapter(pendingAdapter);
@@ -44,9 +67,11 @@ public class AdminInboxActivity extends AppCompatActivity {
     }
 
     private void listenForLists() {
+        // Listen for pending requests
         databaseRef.orderByChild("status").equalTo("PENDING")
                 .addValueEventListener(new ValueEventListener() {
-                    @Override public void onDataChange(DataSnapshot snapshot) {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
                         List<RegistrationRequest> list = new ArrayList<>();
                         for (DataSnapshot child : snapshot.getChildren()) {
                             RegistrationRequest r = child.getValue(RegistrationRequest.class);
@@ -54,12 +79,16 @@ public class AdminInboxActivity extends AppCompatActivity {
                         }
                         pendingAdapter.setRequests(list);
                     }
-                    @Override public void onCancelled(DatabaseError e) { }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError e) { }
                 });
 
+        // Listen for rejected requests
         databaseRef.orderByChild("status").equalTo("REJECTED")
                 .addValueEventListener(new ValueEventListener() {
-                    @Override public void onDataChange(DataSnapshot snapshot) {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
                         List<RegistrationRequest> list = new ArrayList<>();
                         for (DataSnapshot child : snapshot.getChildren()) {
                             RegistrationRequest r = child.getValue(RegistrationRequest.class);
@@ -67,7 +96,9 @@ public class AdminInboxActivity extends AppCompatActivity {
                         }
                         rejectedAdapter.setRequests(list);
                     }
-                    @Override public void onCancelled(DatabaseError e) { }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError e) { }
                 });
     }
 
@@ -79,8 +110,9 @@ public class AdminInboxActivity extends AppCompatActivity {
         String key = keyFromEmail(r.getEmail());
         DatabaseReference node = databaseRef.child(key);
         node.child("status").runTransaction(new Transaction.Handler() {
+            @NonNull
             @Override
-            public Transaction.Result doTransaction(MutableData current) {
+            public Transaction.Result doTransaction(@NonNull MutableData current) {
                 String cur = current.getValue(String.class);
                 if ("APPROVED".equals(cur)) {
                     return Transaction.success(current);
@@ -88,6 +120,7 @@ public class AdminInboxActivity extends AppCompatActivity {
                 current.setValue("APPROVED");
                 return Transaction.success(current);
             }
+
             @Override
             public void onComplete(DatabaseError e, boolean committed, DataSnapshot dataSnapshot) {
                 if (e != null) {
@@ -107,7 +140,8 @@ public class AdminInboxActivity extends AppCompatActivity {
         String key = keyFromEmail(r.getEmail());
         DatabaseReference node = databaseRef.child(key);
         node.child("status").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override public void onDataChange(DataSnapshot snap) {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snap) {
                 String cur = snap.getValue(String.class);
                 if ("APPROVED".equals(cur)) {
                     Toast.makeText(AdminInboxActivity.this, "Cannot reject: already approved", Toast.LENGTH_SHORT).show();
@@ -118,7 +152,9 @@ public class AdminInboxActivity extends AppCompatActivity {
                 node.child("decidedByAdminId").setValue("admin@uottawa.ca");
                 Toast.makeText(AdminInboxActivity.this, "Rejected " + r.getEmail(), Toast.LENGTH_SHORT).show();
             }
-            @Override public void onCancelled(DatabaseError e) { }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError e) { }
         });
     }
 }

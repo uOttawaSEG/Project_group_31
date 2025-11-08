@@ -1,36 +1,42 @@
-package com.example.test;
+package com.example.test.sharedfiles.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.test.R;
+import com.example.test.sharedfiles.model.RegistrationRequest;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHolder> {
+public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHolder> {
 
-    interface RequestAdapterListener {
+    public interface RequestAdapterListener {
         void onApprove(RegistrationRequest r);
         void onReject(RegistrationRequest r);
     }
 
-    private List<RegistrationRequest> requestList = new ArrayList<>();
+    private final List<RegistrationRequest> requestList = new ArrayList<>();
     private final RequestAdapterListener myListener;
     private final boolean isPending;
-    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+    private final SimpleDateFormat simpleDateFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
-    RequestAdapter(boolean isPending, RequestAdapterListener listener) {
+    public RequestAdapter(boolean isPending, RequestAdapterListener listener) {
         this.isPending = isPending;
         this.myListener = listener;
     }
 
-    void setRequests(List<RegistrationRequest> items) {
+    public void setRequests(List<RegistrationRequest> items) {
         requestList.clear();
         if (items != null) {
             requestList.addAll(items);
@@ -41,7 +47,8 @@ class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHold
     @NonNull
     @Override
     public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_request, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.row_request, parent, false);
         return new RequestViewHolder(view);
     }
 
@@ -76,7 +83,6 @@ class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHold
             }
 
             if (courses != null && !courses.isEmpty()) {
-                // Manually build the string
                 StringBuilder coursesString = new StringBuilder();
                 for (int i = 0; i < courses.size(); i++) {
                     coursesString.append(courses.get(i));
@@ -84,11 +90,12 @@ class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHold
                         coursesString.append(", ");
                     }
                 }
-                holder.courses.setText("Courses: " + coursesString.toString());
+                holder.courses.setText("Courses: " + coursesString);
                 holder.courses.setVisibility(View.VISIBLE);
             } else {
                 holder.courses.setVisibility(View.GONE);
             }
+
             holder.program.setVisibility(View.GONE);
         } else {
             holder.program.setVisibility(View.GONE);
@@ -96,21 +103,11 @@ class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHold
             holder.courses.setVisibility(View.GONE);
         }
 
-        holder.approveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                myListener.onApprove(currentRequest);
-            }
-        });
+        holder.approveButton.setOnClickListener(v -> myListener.onApprove(currentRequest));
 
         if (isPending) {
             holder.rejectButton.setVisibility(View.VISIBLE);
-            holder.rejectButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    myListener.onReject(currentRequest);
-                }
-            });
+            holder.rejectButton.setOnClickListener(v -> myListener.onReject(currentRequest));
         } else {
             holder.rejectButton.setVisibility(View.GONE);
         }
@@ -121,11 +118,11 @@ class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHold
         return requestList.size();
     }
 
-    static class RequestViewHolder extends RecyclerView.ViewHolder {
+    public static class RequestViewHolder extends RecyclerView.ViewHolder {
         TextView name, emailPhone, date, program, degree, courses;
         Button approveButton, rejectButton;
 
-        RequestViewHolder(@NonNull View itemView) {
+        public RequestViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.tvNameRole);
             emailPhone = itemView.findViewById(R.id.tvEmailPhone);
