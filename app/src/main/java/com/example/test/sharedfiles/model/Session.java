@@ -16,6 +16,20 @@ public class Session {
 
     }
 
+    public void approve() {
+        this.status = "APPROVED";
+    }
+
+    public void reject() {
+        this.status = "REJECTED";
+    }
+
+    public void cancel() {
+        this.status = "CANCELED";
+    }
+
+
+
 
 
 
