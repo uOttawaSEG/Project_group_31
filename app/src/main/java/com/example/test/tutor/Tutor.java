@@ -15,6 +15,10 @@ public class Tutor extends User {
     private List<Slot> slots;
     private List<Session> sessions;
 
+    public Tutor() {
+        // Firebase needs an empty constructor
+    }
+
     public Tutor(String firstName, String lastName, String email, String password,
                  String phoneNumber, String highestDegree, List<String> coursesOffered) {
 
@@ -95,13 +99,4 @@ public class Tutor extends User {
             session.cancel();
         }
     }
-
-
-
-
-
-
-
-
-
 }

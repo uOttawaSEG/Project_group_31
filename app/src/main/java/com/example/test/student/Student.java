@@ -5,6 +5,10 @@ import com.example.test.sharedfiles.model.User;
 public class Student extends User {
     private String programOfStudy;
 
+    public Student() {
+        // Firebase needs an empty constructor
+    }
+
     public Student(String firstName, String lastName, String email, String password,
                    String phoneNumber, String programOfStudy){
 

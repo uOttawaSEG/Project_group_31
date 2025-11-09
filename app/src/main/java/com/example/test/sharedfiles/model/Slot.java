@@ -6,12 +6,17 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 public class Slot {
+    private String slotId;
     private String tutorId;
     private String date;
     private String startTime;
     private String endTime;
     private boolean requiresApproval;
     private boolean isAvailable;
+
+    public Slot() {
+        // Firebase requires an empty constructor
+    }
 
     public Slot (String tutorId, String date, String startTime, String endTime, boolean requiresApproval, boolean isAvailable) {
         this.tutorId = tutorId;
@@ -23,6 +28,14 @@ public class Slot {
     }
 
     //Getters and Setters
+    public String getSlotId() {
+        return slotId;
+    }
+
+    public void setSlotId(String slotId) {
+        this.slotId = slotId;
+    }
+
     public String getTutorId() {
         return tutorId;
     }
@@ -42,7 +55,7 @@ public class Slot {
     }
 
     public String getStartTime() {
-        return tutorId;
+        return startTime;
     }
 
     public void setStartTime(String startTime) {
@@ -59,7 +72,7 @@ public class Slot {
 
     }
 
-    public boolean getRequiresApproval() {
+    public boolean isRequiresApproval() {
         return requiresApproval;
     }
 
@@ -68,7 +81,7 @@ public class Slot {
 
     }
 
-    public boolean getIsAvailable() {
+    public boolean isAvailable() {
         return isAvailable;
     }
 
@@ -120,21 +133,4 @@ public class Slot {
         }
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
