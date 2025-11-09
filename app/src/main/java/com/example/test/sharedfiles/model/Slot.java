@@ -1,6 +1,7 @@
 package com.example.test.sharedfiles.model;
 
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -78,15 +79,20 @@ public class Slot {
 
     //checks if the slot is from the past
     public boolean isPast() {
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            //combines date and endTime strings and converts it to Date objects
+            Date slotEndDate = simpleDateFormat.parse(date + " " + endTime);
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        //combines date and endTime strings and converts it to Date objects
-        Date slotEndDate = simpleDateFormat.parse(date + " " + endTime);
+            Date now = Calendar.getInstance().getTime();
 
-        Date now = Calendar.getInstance().getTime();
+            //returns true if the slot's end time is before the current time
+            return slotEndDate.before(now);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
 
-        //returns true if the slot's end time is before the current time
-        return slotEndDate.before(now);
     }
 
     //checks overlapping slots
@@ -99,14 +105,20 @@ public class Slot {
             return false;
         }
 
-        //converting string to Date objects
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
-        Date start = simpleDateFormat.parse(startTime);
-        Date end = simpleDateFormat.parse(endTime);
-        Date startOther = simpleDateFormat.parse(other.startTime);
-        Date endOther = simpleDateFormat.parse(other.endTime);
+        try {
+            //converting string to Date objects
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
+            Date start = simpleDateFormat.parse(startTime);
+            Date end = simpleDateFormat.parse(endTime);
+            Date startOther = simpleDateFormat.parse(other.startTime);
+            Date endOther = simpleDateFormat.parse(other.endTime);
 
-        return start.before(endOther) && end.after(startOther);
+            return start.before(endOther) && end.after(startOther);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
 
