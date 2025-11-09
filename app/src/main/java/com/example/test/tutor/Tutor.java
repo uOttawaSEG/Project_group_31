@@ -42,4 +42,66 @@ public class Tutor extends User {
     public void setCoursesOffered(List<String> coursesOffered) {
         this.coursesOffered = coursesOffered;
     }
+
+    public boolean getIsAutoApproved() {
+        return autoApproved;
+    }
+
+    public void setAutoApproved(boolean autoApproved) {
+        this.autoApproved = autoApproved;
+    }
+
+    public List<Slot> getSlots() {
+        return slots;
+    }
+
+    public void setSlots(List<Slot> slots) {
+        if (slots != null) {
+            this.slots = slots;
+        } else {
+            this.slots = new ArrayList<>();
+        }
+    }
+
+    public List<Session> getSessions() {
+        return sessions;
+    }
+
+    public void setSessions(List<Session> sessions) {
+        if (sessions != null) {
+            this.sessions = sessions;
+        } else {
+            this.sessions = new ArrayList<>();
+        }
+    }
+
+
+    //sets status to APPROVED, REJECTED, or CANCELED
+    public void approveSession(Session session) {
+        if (session != null) {
+            session.approve();
+        }
+    }
+
+
+    public void rejectedSession(Session session) {
+        if (session != null) {
+            session.reject();
+        }
+    }
+
+    public void cancelSession(Session session) {
+        if (session != null) {
+            session.cancel();
+        }
+    }
+
+
+
+
+
+
+
+
+
 }
