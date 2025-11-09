@@ -31,61 +31,82 @@ public class Slot {
 
     }
 
-    public String date() {
+    public String getDate() {
         return date;
     }
 
-    public void date(String date) {
+    public void setDate(String date) {
         this.date = date;
 
     }
 
-    public String startTime() {
+    public String getStartTime() {
         return tutorId;
     }
 
-    public void startTime(String startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
 
     }
 
-    public String endTime() {
+    public String getEndTime() {
         return endTime;
     }
 
-    public void endTime(String endTime) {
+    public void setEndTime(String endTime) {
         this.endTime = endTime;
 
     }
 
-    public boolean requiresApproval() {
+    public boolean getRequiresApproval() {
         return requiresApproval;
     }
 
-    public void requiresApproval(boolean requiresApproval) {
+    public void setRequiresApproval(boolean requiresApproval) {
         this.requiresApproval = requiresApproval;
 
     }
 
-    public boolean isAvailable() {
+    public boolean getIsAvailable() {
         return isAvailable;
     }
 
-    public void isAvailable(boolean isAvailable) {
+    public void setIsAvailable(boolean isAvailable) {
         this.isAvailable = isAvailable;
 
     }
 
     //checks if the slot is from the past
     public boolean isPast() {
-        //Parse slot's time
+
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        //combines date and endTime strings and converts it to Date objects
         Date slotEndDate = simpleDateFormat.parse(date + " " + endTime);
 
         Date now = Calendar.getInstance().getTime();
 
         //returns true if the slot's end time is before the current time
         return slotEndDate.before(now);
+    }
+
+    //checks overlapping slots
+    public boolean overlaps(Slot other) {
+        if (other == null) {
+            return false;
+        }
+
+        if (!this.date.equals(other.date)) {
+            return false;
+        }
+
+        //converting string to Date objects
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
+        Date start = simpleDateFormat.parse(startTime);
+        Date end = simpleDateFormat.parse(endTime);
+        Date startOther = simpleDateFormat.parse(other.startTime);
+        Date endOther = simpleDateFormat.parse(other.endTime);
+
+        return start.before(endOther) && end.after(startOther);
     }
 
 
