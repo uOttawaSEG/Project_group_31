@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:padding="20dp"
     android:background="#FFFFFF"
-        tools:context=".tutor.ManageSlotsActivity">
+    tools:context=".tutor.ManageSlotsActivity">
     <!--Title of the page so tutor can know what screen he is-->
 
     <TextView
@@ -42,7 +42,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:scrollbars="vertical"
-        tools:listitem="@layout/item_slot" />
+        tools:listitem="@layout/item_request" />
 
     <!--he can return to the dashboard to see his updated schedule-->
     <Button

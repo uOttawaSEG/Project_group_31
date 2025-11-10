@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#FFFFFF"
+    tools:context=".tutor.PendingRequestsActivity">
+
+    <!--Page title is created-->
+    <TextView
+        android:id="@+id/tvPendingTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pending Session Requests Page"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!--tutor can view all the request and scroll down if needed-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPendingRequests"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/item_request" />
+
+    <!--Line to separate requests so it's more visible to user -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCCCCC"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp" />
+
+    <!--return to the dashboard page button-->
+    <Button
+        android:id="@+id/btnReturnDashboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Return to Dashboard"
+        android:backgroundTint="#757575"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false" />
+
+</LinearLayout>
