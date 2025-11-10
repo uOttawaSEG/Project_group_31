@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#FFFFFF"
+        tools:context=".tutor.ManageSlotsActivity">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Manage your available slots"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Add Slot Button -->
+    <Button
+        android:id="@+id/btnAddSlot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add New Slot"
+        android:layout_marginBottom="12dp"
+        android:textAllCaps="false" />
+
+    <!-- List of Existing Slots -->
+    <TextView
+        android:id="@+id/tvYourSlots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Current Slots:"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSlotsList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/row_slot_item" />
+
+    <!-- Return Button -->
+    <Button
+        android:id="@+id/btnReturnDashboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Back to Dashboard"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="#757575"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false" />
+
+</LinearLayout>
