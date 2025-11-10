@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.Switch;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.test.R;
@@ -14,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +28,8 @@ public class RegisterTutorActivity extends AppCompatActivity {
 
     EditText firstName, lastName, email, password, phone, degree, courses;
     Button registerBtn;
+
+    Switch switchAutoApproval_REPLACE_WITH_XML_ID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,8 @@ public class RegisterTutorActivity extends AppCompatActivity {
         courses = findViewById(R.id.etCourses);
         registerBtn = findViewById(R.id.btnRegister);
 
+        switchAutoApproval_REPLACE_WITH_XML_ID = findViewById(R.id.switchAutoApproval_REPLACE_WITH_XML_ID);
+
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,6 +66,10 @@ public class RegisterTutorActivity extends AppCompatActivity {
         String ph = phone.getText().toString().trim();
         String deg = degree.getText().toString().trim();
         String crs = courses.getText().toString().trim();
+
+        boolean autoApproved =
+                switchAutoApproval_REPLACE_WITH_XML_ID != null
+                        && switchAutoApproval_REPLACE_WITH_XML_ID.isChecked();
 
         if (fName.isEmpty() || lName.isEmpty() || em.isEmpty() ||
                 pw.isEmpty() || ph.isEmpty() || deg.isEmpty() || crs.isEmpty()) {
@@ -82,6 +92,7 @@ public class RegisterTutorActivity extends AppCompatActivity {
                         tutorMap.put("coursesOffered", crs);
                         tutorMap.put("role", "Tutor");
                         tutorMap.put("status", "Pending");
+                        tutorMap.put("autoApproved", autoApproved);
 
                         databaseRef.child(uid).setValue(tutorMap)
                                 .addOnSuccessListener(aVoid -> {
