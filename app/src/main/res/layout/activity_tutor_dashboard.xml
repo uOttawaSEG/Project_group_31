@@ -7,7 +7,8 @@
     android:padding="24dp"
     android:gravity="center_horizontal"
     tools:context=".tutor.TutorDashboardActivity">
-    // This is the title of the page
+
+    <!--This is the title of the page-->
 
     <TextView
         android:id="@+id/tvTutorWelcome"
@@ -17,35 +18,37 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:layout_marginBottom="32dp" />
-    // create button so that tutor can mange their available slot
+    <!--create button so that tutor can mange their available sloT-->
     <Button
         android:id="@+id/btnManageSlots"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Manage your available slots"
         android:layout_marginBottom="16dp" />
-    // navigate the tutor to another screen when he click on this
+
+    <!--navigate the tutor to another screen when he click on this-->
     <Button
         android:id="@+id/btnPendingRequests"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Pending Session Requests From Students"
         android:layout_marginBottom="16dp" />
-    // navigate to another screen to view their sessions after clicking on it
+
+    <!--navigate to another screen to view their sessions after clicking on it-->
     <Button
         android:id="@+id/btnViewSessions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="View Your Sessions"
         android:layout_marginBottom="16dp" />
-     // line to separate log out button and others button to avoid click on log out by accident
+    <!--line to separate log out button and others button to avoid click on log out by accident-->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#CCCCCC"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp" />
-    // tutor can log out when he finished his works
+    <!--tutor can log out when he finished his works-->
     <Button
         android:id="@+id/btnLogoutTutor"
         android:layout_width="match_parent"
