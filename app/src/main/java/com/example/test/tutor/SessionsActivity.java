@@ -28,8 +28,8 @@ import java.util.Map;
 
 public class SessionsActivity extends AppCompatActivity implements SessionAdapter.OnSessionCancelListener {
 
-    private RecyclerView rvUpcomingSessions_REPLACE_WITH_XML_ID;
-    private RecyclerView rvPastSessions_REPLACE_WITH_XML_ID;
+    private RecyclerView rvUpcomingSessions;
+    private RecyclerView rvPastSessions;
 
     private SessionAdapter upcomingAdapter;
     private SessionAdapter pastAdapter;
@@ -45,7 +45,7 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_sessions_REPLACE_ME);
+        setContentView(R.layout.activity_sessions);
 
         repository = new FirebaseRepository();
         mAuth = FirebaseAuth.getInstance();
@@ -57,17 +57,17 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
             return;
         }
 
-        rvUpcomingSessions_REPLACE_WITH_XML_ID = findViewById(R.id.rvUpcomingSessions_REPLACE_WITH_XML_ID);
-        rvPastSessions_REPLACE_WITH_XML_ID = findViewById(R.id.rvPastSessions_REPLACE_WITH_XML_ID);
+        rvUpcomingSessions = findViewById(R.id.rvUpcomingSessions);
+        rvPastSessions = findViewById(R.id.rvPastSessions);
 
-        rvUpcomingSessions_REPLACE_WITH_XML_ID.setLayoutManager(new LinearLayoutManager(this));
-        rvPastSessions_REPLACE_WITH_XML_ID.setLayoutManager(new LinearLayoutManager(this));
+        rvUpcomingSessions.setLayoutManager(new LinearLayoutManager(this));
+        rvPastSessions.setLayoutManager(new LinearLayoutManager(this));
 
         upcomingAdapter = new SessionAdapter(this, true);
         pastAdapter = new SessionAdapter(this, false);
 
-        rvUpcomingSessions_REPLACE_WITH_XML_ID.setAdapter(upcomingAdapter);
-        rvPastSessions_REPLACE_WITH_XML_ID.setAdapter(pastAdapter);
+        rvUpcomingSessions.setAdapter(upcomingAdapter);
+        rvPastSessions.setAdapter(pastAdapter);
 
         loadStudentNamesAndSlotTimes();
     }
@@ -121,7 +121,7 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
                 for (DataSnapshot sessionSnap : snapshot.getChildren()) {
                     Session session = sessionSnap.getValue(Session.class);
                     if (session != null) {
-                        session.setSessionId(sessionSnap.getKey()); // Store the key
+                        session.setSessionId(sessionSnap.getKey());
                         allSessions.add(session);
                     }
                 }

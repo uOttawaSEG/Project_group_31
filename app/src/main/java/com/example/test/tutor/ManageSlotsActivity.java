@@ -30,7 +30,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
     private FirebaseAuth mAuth;
     private String currentTutorId;
 
-    private RecyclerView rvSlots_REPLACE_WITH_XML_ID;
+    private RecyclerView rvSlots;
 
     private final List<Slot> mySlots = new ArrayList<>();
     private final Map<Slot, String> slotKeyMap = new HashMap<>();
@@ -38,7 +38,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_manage_slots_REPLACE_ME);
+        setContentView(R.layout.activity_slots_manager);
 
         repository = new FirebaseRepository();
         mAuth = FirebaseAuth.getInstance();
@@ -50,11 +50,11 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
             return;
         }
 
-        rvSlots_REPLACE_WITH_XML_ID = findViewById(R.id.rvSlots_REPLACE_WITH_XML_ID);
-        rvSlots_REPLACE_WITH_XML_ID.setLayoutManager(new LinearLayoutManager(this));
+        rvSlots = findViewById(R.id.rvViewSlotsList);
+        rvSlots.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new TutorSlotAdapter(this);
-        rvSlots_REPLACE_WITH_XML_ID.setAdapter(adapter);
+        rvSlots.setAdapter(adapter);
 
         loadTutorSlots();
     }
@@ -69,6 +69,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                 for (DataSnapshot s : snapshot.getChildren()) {
                     Slot slot = s.getValue(Slot.class);
                     if (slot != null) {
+                        slot.setSlotId(s.getKey());
                         mySlots.add(slot);
                         slotKeyMap.put(slot, s.getKey());
                     }
@@ -85,7 +86,11 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
 
     @Override
     public void onSlotDelete(Slot slot) {
-        String key = slotKeyMap.get(slot);
+        String key = slot.getSlotId();
+        if (key == null) {
+            key = slotKeyMap.get(slot);
+        }
+
         if (key == null || key.trim().isEmpty()) {
             Toast.makeText(this, "Missing slot id", Toast.LENGTH_SHORT).show();
             return;

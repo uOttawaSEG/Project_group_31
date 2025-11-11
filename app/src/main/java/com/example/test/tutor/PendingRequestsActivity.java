@@ -13,6 +13,8 @@ import com.example.test.sharedfiles.adapters.PendingSessionRequestAdapter;
 import com.example.test.sharedfiles.model.Slot;
 import com.example.test.sharedfiles.model.Session;
 import com.example.test.student.Student;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,9 +27,9 @@ import java.util.Map;
 
 public class PendingRequestsActivity extends AppCompatActivity {
 
-    private RecyclerView rvPendingSessions_REPLACE_WITH_XML_ID;
+    private RecyclerView rvPendingSessions;
 
-    private SessionAdapter adapter;
+    private PendingSessionRequestAdapter adapter;
     private FirebaseRepository repository;
     private FirebaseAuth mAuth;
     private String currentTutorId;
@@ -39,7 +41,7 @@ public class PendingRequestsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pending_requests_REPLACE_ME);
+        setContentView(R.layout.activity_pending_requests);
 
         repository = new FirebaseRepository();
         mAuth = FirebaseAuth.getInstance();
@@ -51,27 +53,35 @@ public class PendingRequestsActivity extends AppCompatActivity {
             return;
         }
 
-        rvPendingSessions_REPLACE_WITH_XML_ID = findViewById(R.id.rvPendingSessions_REPLACE_WITH_XML_ID);
-        rvPendingSessions_REPLACE_WITH_XML_ID.setLayoutManager(new LinearLayoutManager(this));
+        rvPendingSessions = findViewById(R.id.rvPendingRequests);
+        rvPendingSessions.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new PendingSessionRequestAdapter(new PendingSessionRequestAdapter.Listener() {
             @Override
             public void onApprove(Session s) {
-                repository.updateSessionStatus(s.getSessionId(), "Approved", task ->
+                repository.updateSessionStatus(s.getSessionId(), "APPROVED", new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
                         Toast.makeText(PendingRequestsActivity.this,
                                 task.isSuccessful() ? "Approved" : "Update failed",
-                                Toast.LENGTH_SHORT).show());
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             @Override
             public void onReject(Session s) {
-                repository.updateSessionStatus(s.getSessionId(), "Rejected", task ->
+                repository.updateSessionStatus(s.getSessionId(), "REJECTED", new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
                         Toast.makeText(PendingRequestsActivity.this,
                                 task.isSuccessful() ? "Rejected" : "Update failed",
-                                Toast.LENGTH_SHORT).show());
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
-        rvPendingSessions_REPLACE_WITH_XML_ID.setAdapter(adapter);
+        rvPendingSessions.setAdapter(adapter);
 
         loadStudentNamesAndSlotTimes();
     }
@@ -125,7 +135,7 @@ public class PendingRequestsActivity extends AppCompatActivity {
                     Session sess = s.getValue(Session.class);
                     if (sess != null) {
                         sess.setSessionId(s.getKey());
-                        if ("Pending".equalsIgnoreCase(sess.getStatus())) {
+                        if ("PENDING".equalsIgnoreCase(sess.getStatus())) {
                             pending.add(sess);
                         }
                     }

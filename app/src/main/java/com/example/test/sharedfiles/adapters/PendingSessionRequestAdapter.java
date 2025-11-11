@@ -46,7 +46,7 @@ public class PendingSessionRequestAdapter extends RecyclerView.Adapter<PendingSe
     @Override
     public PendingSessionRequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_pending_session_REPLACE_ME, parent, false);
+                .inflate(R.layout.activity_session_request_list, parent, false);
         return new PendingSessionRequestViewHolder(v);
     }
 
@@ -62,7 +62,7 @@ public class PendingSessionRequestAdapter extends RecyclerView.Adapter<PendingSe
         if (time == null) time = "Slot ID: " + s.getSlotId();
         h.timeTxt.setText("Time: " + time);
 
-        h.statusTxt.setText("Status: " + s.getStatus());
+
 
         h.approveBtn.setOnClickListener(v -> {
             if (listener != null) listener.onApprove(s);
@@ -81,19 +81,15 @@ public class PendingSessionRequestAdapter extends RecyclerView.Adapter<PendingSe
     static class PendingSessionRequestViewHolder extends RecyclerView.ViewHolder {
         TextView nameTxt;
         TextView timeTxt;
-        TextView statusTxt;
         Button approveBtn;
         Button rejectBtn;
 
         PendingSessionRequestViewHolder(@NonNull View itemView) {
             super(itemView);
-            nameTxt   = itemView.findViewById(R.id.nameTxt);
-            timeTxt   = itemView.findViewById(R.id.timeTxt);
-            statusTxt = itemView.findViewById(R.id.statusTxt);
-            approveBtn = itemView.findViewById(R.id.approveBtn);
-            rejectBtn  = itemView.findViewById(R.id.rejectBtn);
+            nameTxt   = itemView.findViewById(R.id.tvStudentName);
+            timeTxt   = itemView.findViewById(R.id.tvTimeRequested);
+            approveBtn = itemView.findViewById(R.id.btnAcceptRequest);
+            rejectBtn  = itemView.findViewById(R.id.btnRejectRequest);
         }
     }
 }
-
-

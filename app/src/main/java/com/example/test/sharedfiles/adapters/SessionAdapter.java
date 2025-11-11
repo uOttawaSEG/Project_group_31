@@ -37,7 +37,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
     @Override
     public SessionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_session_REPLACE_ME, parent, false);
+                .inflate(R.layout.item_session, parent, false);
         return new SessionViewHolder(view);
     }
 
@@ -52,7 +52,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
         if (studentName == null) {
             studentName = "Student ID: " + currentSession.getStudentId();
         }
-        holder.tvStudentName_REPLACE_WITH_XML_ID.setText("Student: " + studentName);
+        holder.tvStudentName.setText("Student: " + studentName);
 
         String sessionTime = "Loading...";
         if (slotTimeMap != null) {
@@ -61,13 +61,13 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
         if (sessionTime == null) {
             sessionTime = "Slot ID: " + currentSession.getSlotId();
         }
-        holder.tvSessionTime_REPLACE_WITH_XML_ID.setText("Time: " + sessionTime);
+        holder.tvSessionTime.setText("Time: " + sessionTime);
 
-        holder.tvSessionStatus_REPLACE_WITH_XML_ID.setText("Status: " + currentSession.getStatus());
+        holder.tvSessionStatus.setText("Status: " + currentSession.getStatus());
 
         if (showCancelButton) {
-            holder.btnCancelSession_REPLACE_WITH_XML_ID.setVisibility(View.VISIBLE);
-            holder.btnCancelSession_REPLACE_WITH_XML_ID.setOnClickListener(new View.OnClickListener() {
+            holder.btnCancelSession.setVisibility(View.VISIBLE);
+            holder.btnCancelSession.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (cancelListener != null) {
@@ -76,7 +76,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
                 }
             });
         } else {
-            holder.btnCancelSession_REPLACE_WITH_XML_ID.setVisibility(View.GONE);
+            holder.btnCancelSession.setVisibility(View.GONE);
         }
     }
 
@@ -97,18 +97,18 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
 
     static class SessionViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvStudentName_REPLACE_WITH_XML_ID;
-        TextView tvSessionTime_REPLACE_WITH_XML_ID;
-        TextView tvSessionStatus_REPLACE_WITH_XML_ID;
-        Button btnCancelSession_REPLACE_WITH_XML_ID;
+        TextView tvStudentName;
+        TextView tvSessionTime;
+        TextView tvSessionStatus;
+        Button btnCancelSession;
 
         public SessionViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            tvStudentName_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.tvStudentName_REPLACE_WITH_XML_ID);
-            tvSessionTime_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.tvSessionTime_REPLACE_WITH_XML_ID);
-            tvSessionStatus_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.tvSessionStatus_REPLACE_WITH_XML_ID);
-            btnCancelSession_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.btnCancelSession_REPLACE_WITH_XML_ID);
+            tvStudentName = itemView.findViewById(R.id.tvStudentName);
+            tvSessionTime = itemView.findViewById(R.id.tvSessionTime);
+            tvSessionStatus = itemView.findViewById(R.id.tvSessionStatus);
+            btnCancelSession = itemView.findViewById(R.id.btnCancelSession);
         }
     }
 }
