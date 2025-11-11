@@ -17,6 +17,25 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
+
+    <!--Allow tutor to set up auto-approve or manually approve the request-->
+    <TextView
+        android:id="@+id/tvApprovalMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Session Approval Mode:"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="6dp" />
+
+    <Switch
+        android:id="@+id/switchAutoApproval"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Automatic Approval"
+        android:checked="false"
+        android:layout_marginBottom="16dp" />
+
     <!--add slots button-->
     <Button
         android:id="@+id/btnAddSlot"
@@ -54,5 +73,4 @@
         android:backgroundTint="#757575"
         android:textColor="@android:color/white"
         android:textAllCaps="false" />
-
 </LinearLayout>

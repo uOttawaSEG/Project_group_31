@@ -14,7 +14,6 @@
         android:layout_weight="1"
         android:text="2025-02-01 10:00 - 10:30"
         android:textSize="16sp"/>
-
     <Button
         android:id="@+id/btnDeleteSlot"
         android:layout_width="wrap_content"
