@@ -9,7 +9,9 @@ public class User {
 
     protected String role;
 
+    public User(){
 
+    }
     //Constructor to create student object with first name and last name
     public User(String firstName, String lastName, String email, String password, String phoneNumber, String role) {
 

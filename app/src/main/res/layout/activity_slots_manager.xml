@@ -63,6 +63,8 @@
         android:scrollbars="vertical"
         tools:listitem="@layout/item_slot" />
 
+
+
     <!--he can return to the dashboard to see his updated schedule-->
     <Button
         android:id="@+id/btnReturnToDashboard"

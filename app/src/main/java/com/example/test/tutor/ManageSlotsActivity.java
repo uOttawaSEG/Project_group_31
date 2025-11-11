@@ -1,5 +1,8 @@
 package com.example.test.tutor;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
+import android.widget.Button;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -18,6 +21,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +35,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
     private String currentTutorId;
 
     private RecyclerView rvSlots;
-
+    private Button btnAddSlot;
     private final List<Slot> mySlots = new ArrayList<>();
     private final Map<Slot, String> slotKeyMap = new HashMap<>();
 
@@ -56,7 +60,63 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
         adapter = new TutorSlotAdapter(this);
         rvSlots.setAdapter(adapter);
 
+        btnAddSlot = findViewById(R.id.btnAddSlot);
+        btnAddSlot.setOnClickListener(v -> showAddSlotDialog());
+
         loadTutorSlots();
+    }
+
+
+    private void showAddSlotDialog() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+
+                    TimePickerDialog startPicker = new TimePickerDialog(
+                            this,
+                            (view1, hourOfDay, minute) -> {
+                                String startTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
+
+                                TimePickerDialog endPicker = new TimePickerDialog(
+                                        this,
+                                        (view2, endHour, endMinute) -> {
+                                            String endTime = String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute);
+                                            addNewSlot(selectedDate, startTime, endTime);
+                                        },
+                                        (hourOfDay + 1) % 24, minute, true
+                                );
+                                endPicker.setTitle("Select End Time");
+                                endPicker.show();
+                            },
+                            9, 0, true
+                    );
+                    startPicker.setTitle("Select Start Time");
+                    startPicker.show();
+                },
+                2025, 0, 1
+        );
+
+        datePickerDialog.setTitle("Select Date");
+        datePickerDialog.show();
+    }
+
+    private void addNewSlot(String date, String startTime, String endTime) {
+        Slot newSlot = new Slot();
+        newSlot.setTutorId(currentTutorId);
+        newSlot.setDate(date);
+        newSlot.setStartTime(startTime);
+        newSlot.setEndTime(endTime);
+        newSlot.setRequiresApproval(false);
+        newSlot.setIsAvailable(true);
+
+        repository.addSlot(newSlot, task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(this, "Slot added: " + date + " " + startTime + " - " + endTime, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to add slot", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadTutorSlots() {
@@ -83,6 +143,9 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
             }
         });
     }
+
+
+
 
     @Override
     public void onSlotDelete(Slot slot) {

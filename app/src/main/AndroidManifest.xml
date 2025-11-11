@@ -37,6 +37,23 @@
             android:exported="false" />
 
         <activity
+            android:name=".tutor.TutorDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".tutor.SessionsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".tutor.ManageSlotsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".tutor.PendingRequestsActivity"
+            android:exported="false" />
+
+
+        <activity
             android:name=".sharedUserInterface.MainActivity"
             android:exported="true">
             <intent-filter>
