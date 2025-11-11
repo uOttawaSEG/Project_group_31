@@ -1,11 +1,13 @@
 package com.example.test.data;
 
+import java.util.Map;
+import android.util.Log;
+
 import com.example.test.sharedfiles.model.RegistrationRequest;
 import com.example.test.sharedfiles.model.Session;
 import com.example.test.sharedfiles.model.Slot;
 import com.example.test.student.Student;
 import com.example.test.tutor.Tutor;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,11 +42,7 @@ public class FirebaseRepository {
 
     public String getCurrentUserId() {
         FirebaseUser user = auth.getCurrentUser();
-        if (user != null) {
-            return user.getUid();
-        } else {
-            return null;
-        }
+        return (user != null) ? user.getUid() : null;
     }
 
     public void logout() {
@@ -53,8 +51,6 @@ public class FirebaseRepository {
 
     public void addRegistrationRequest(RegistrationRequest request, OnCompleteListener<Void> listener) {
         String id = db.child("registrationRequests").push().getKey();
-        // request.setRequestId(id); // Your RegistrationRequest model has no setRequestId
-
         db.child("registrationRequests").child(id).setValue(request)
                 .addOnCompleteListener(listener);
     }
@@ -63,12 +59,6 @@ public class FirebaseRepository {
         return db.child("registrationRequests")
                 .orderByChild("status")
                 .equalTo("PENDING");
-    }
-
-    public Query getRejectedRequests() {
-        return db.child("registrationRequests")
-                .orderByChild("status")
-                .equalTo("REJECTED");
     }
 
     public void updateRequestStatus(String requestId, String status, OnCompleteListener<Void> listener) {
@@ -90,7 +80,6 @@ public class FirebaseRepository {
     public void addSlot(Slot slot, OnCompleteListener<Void> listener) {
         String id = db.child("slots").push().getKey();
         slot.setSlotId(id);
-
         db.child("slots").child(id).setValue(slot)
                 .addOnCompleteListener(listener);
     }
@@ -103,6 +92,7 @@ public class FirebaseRepository {
     public Query getSlotsByTutor(String tutorId) {
         return db.child("slots").orderByChild("tutorId").equalTo(tutorId);
     }
+
 
     public void addSession(Session session, OnCompleteListener<Void> listener) {
         String id = db.child("sessions").push().getKey();
@@ -129,6 +119,52 @@ public class FirebaseRepository {
                 .orderByChild("studentId")
                 .equalTo(studentId);
     }
+
+    public void createSessionFromRequest(String requestId, Map<String, Object> requestData) {
+        DatabaseReference sessionsRef = FirebaseDatabase.getInstance()
+                .getReference("sessions");
+
+        String newSessionId = sessionsRef.push().getKey();
+        if (newSessionId != null) {
+            sessionsRef.child(newSessionId).setValue(requestData)
+                    .addOnSuccessListener(aVoid -> {
+                        FirebaseDatabase.getInstance().getReference("StudentSlotRequests")
+                                .child(requestId)
+                                .removeValue();
+                    })
+                    .addOnFailureListener(e ->
+                            Log.e("FirebaseRepository", "Failed to create session", e));
+        }
+    }
+
+
+    public void addStudentSlotRequest(Session session, OnCompleteListener<Void> listener) {
+        String id = db.child("StudentSlotRequests").push().getKey();
+        session.setSessionId(id);
+        db.child("StudentSlotRequests").child(id).setValue(session)
+                .addOnCompleteListener(listener);
+    }
+
+    public void updateStudentSlotRequestStatus(String requestId, String status, OnCompleteListener<Void> listener) {
+        db.child("StudentSlotRequests").child(requestId)
+                .child("status").setValue(status)
+                .addOnCompleteListener(listener);
+    }
+
+    public Query getAllStudentSlotRequests() {
+        return db.child("StudentSlotRequests");
+    }
+
+    public Query getPendingStudentSlotRequests() {
+        return db.child("StudentSlotRequests")
+                .orderByChild("status").equalTo("PENDING");
+    }
+
+    public Query getStudentSlotRequestsByTutor(String tutorId) {
+        return db.child("StudentSlotRequests")
+                .orderByChild("tutorId").equalTo(tutorId);
+    }
+
 
     public DatabaseReference getDatabaseReference(String path) {
         return db.child(path);

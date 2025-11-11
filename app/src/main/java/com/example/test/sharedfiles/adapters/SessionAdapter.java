@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,8 +23,8 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
     private final boolean showCancelButton;
 
     private Map<String, String> studentNameMap;
-    private Map<String, String> slotTimeMap;
 
+    // Listener interface for cancel button
     public interface OnSessionCancelListener {
         void onSessionCancel(Session session);
     }
@@ -45,34 +46,26 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
     public void onBindViewHolder(@NonNull SessionViewHolder holder, int position) {
         Session currentSession = sessionList.get(position);
 
-        String studentName = "Loading...";
-        if (studentNameMap != null) {
-            studentName = studentNameMap.get(currentSession.getStudentId());
-        }
-        if (studentName == null) {
-            studentName = "Student ID: " + currentSession.getStudentId();
+        String studentName = "Unknown Student";
+        if (studentNameMap != null && currentSession.getStudentId() != null) {
+            String name = studentNameMap.get(currentSession.getStudentId());
+            if (name != null) {
+                studentName = name;
+            }
         }
         holder.tvStudentName.setText("Student: " + studentName);
 
-        String sessionTime = "Loading...";
-        if (slotTimeMap != null) {
-            sessionTime = slotTimeMap.get(currentSession.getSlotId());
-        }
-        if (sessionTime == null) {
-            sessionTime = "Slot ID: " + currentSession.getSlotId();
-        }
-        holder.tvSessionTime.setText("Time: " + sessionTime);
+        String sessionTime = "Date: " + currentSession.getDate()
+                + " | " + currentSession.getStartTime() + " - " + currentSession.getEndTime();
+        holder.tvSessionTime.setText(sessionTime);
 
         holder.tvSessionStatus.setText("Status: " + currentSession.getStatus());
 
         if (showCancelButton) {
             holder.btnCancelSession.setVisibility(View.VISIBLE);
-            holder.btnCancelSession.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (cancelListener != null) {
-                        cancelListener.onSessionCancel(currentSession);
-                    }
+            holder.btnCancelSession.setOnClickListener(v -> {
+                if (cancelListener != null) {
+                    cancelListener.onSessionCancel(currentSession);
                 }
             });
         } else {
@@ -85,18 +78,17 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
         return sessionList.size();
     }
 
-    public void setSessions(List<Session> sessions, Map<String, String> studentNames, Map<String, String> slotTimes) {
+    public void setSessions(List<Session> sessions, Map<String, String> studentNames) {
         this.sessionList.clear();
         if (sessions != null) {
             this.sessionList.addAll(sessions);
         }
         this.studentNameMap = studentNames;
-        this.slotTimeMap = slotTimes;
         notifyDataSetChanged();
     }
 
-    static class SessionViewHolder extends RecyclerView.ViewHolder {
 
+    static class SessionViewHolder extends RecyclerView.ViewHolder {
         TextView tvStudentName;
         TextView tvSessionTime;
         TextView tvSessionStatus;
@@ -104,7 +96,6 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
 
         public SessionViewHolder(@NonNull View itemView) {
             super(itemView);
-
             tvStudentName = itemView.findViewById(R.id.tvStudentName);
             tvSessionTime = itemView.findViewById(R.id.tvSessionTime);
             tvSessionStatus = itemView.findViewById(R.id.tvSessionStatus);

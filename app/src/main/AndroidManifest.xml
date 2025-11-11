@@ -52,6 +52,10 @@
             android:name=".tutor.PendingRequestsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".student.StudentCreateSlotRequestActivity" />
+
+        <activity android:name=".student.StudentDashboardActivity" />
 
         <activity
             android:name=".sharedUserInterface.MainActivity"

@@ -11,7 +11,8 @@ public class Tutor extends User {
     private String highestDegree;
     private List<String> coursesOffered;
 
-    private boolean autoApproved;
+    private boolean autoApproval;
+
     private List<Slot> slots;
     private List<Session> sessions;
 
@@ -25,34 +26,34 @@ public class Tutor extends User {
         super(firstName, lastName, email, password, phoneNumber, "Tutor");
         this.highestDegree = highestDegree;
         this.coursesOffered = coursesOffered;
-
+        this.autoApproval = false; // default: manual approval
         this.slots = new ArrayList<>();
         this.sessions = new ArrayList<>();
-        this.autoApproved = false;
     }
 
-
+    // Getters and Setters
     public String getHighestDegree() {
         return highestDegree;
     }
+
     public void setHighestDegree(String highestDegree) {
         this.highestDegree = highestDegree;
     }
 
-
     public List<String> getCoursesOffered() {
         return coursesOffered;
     }
+
     public void setCoursesOffered(List<String> coursesOffered) {
         this.coursesOffered = coursesOffered;
     }
 
-    public boolean getIsAutoApproved() {
-        return autoApproved;
+    public boolean isAutoApproval() {
+        return autoApproval;
     }
 
-    public void setAutoApproved(boolean autoApproved) {
-        this.autoApproved = autoApproved;
+    public void setAutoApproval(boolean autoApproval) {
+        this.autoApproval = autoApproval;
     }
 
     public List<Slot> getSlots() {
@@ -60,11 +61,7 @@ public class Tutor extends User {
     }
 
     public void setSlots(List<Slot> slots) {
-        if (slots != null) {
-            this.slots = slots;
-        } else {
-            this.slots = new ArrayList<>();
-        }
+        this.slots = (slots != null) ? slots : new ArrayList<>();
     }
 
     public List<Session> getSessions() {
@@ -72,31 +69,18 @@ public class Tutor extends User {
     }
 
     public void setSessions(List<Session> sessions) {
-        if (sessions != null) {
-            this.sessions = sessions;
-        } else {
-            this.sessions = new ArrayList<>();
-        }
+        this.sessions = (sessions != null) ? sessions : new ArrayList<>();
     }
 
-
-    //sets status to APPROVED, REJECTED, or CANCELED
     public void approveSession(Session session) {
-        if (session != null) {
-            session.approve();
-        }
+        if (session != null) session.approve();
     }
 
-
-    public void rejectedSession(Session session) {
-        if (session != null) {
-            session.reject();
-        }
+    public void rejectSession(Session session) {
+        if (session != null) session.reject();
     }
 
     public void cancelSession(Session session) {
-        if (session != null) {
-            session.cancel();
-        }
+        if (session != null) session.cancel();
     }
 }

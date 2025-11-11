@@ -2,6 +2,7 @@ package com.example.test.student;
 
 import com.example.test.sharedfiles.model.User;
 
+
 public class Student extends User {
     private String programOfStudy;
 
@@ -23,4 +24,6 @@ public class Student extends User {
     public void setProgramOfStudy(String programOfStudy) {
         this.programOfStudy = programOfStudy;
     }
+
+
 }

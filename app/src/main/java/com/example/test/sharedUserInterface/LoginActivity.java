@@ -94,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                     if ("Tutor".equals(role)) {
                                                                         intent = new Intent(LoginActivity.this, com.example.test.tutor.TutorDashboardActivity.class);
                                                                     } else {
-                                                                        intent = new Intent(LoginActivity.this, com.example.test.sharedUserInterface.WelcomeActivity.class);
+                                                                        intent = new Intent(LoginActivity.this, com.example.test.student.StudentDashboardActivity.class);
                                                                     }
                                                                     intent.putExtra("email", email);
                                                                     intent.putExtra("role", role);
