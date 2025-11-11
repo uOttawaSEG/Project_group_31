@@ -7,7 +7,7 @@
     android:background="#EEEEEE"
     android:layout_marginBottom="8dp">
 
-    <!-- Name and role -->
+    <!--Name and role-->
     <TextView
         android:id="@+id/tvNameRole"
         android:text="Jane Doe — Student"
@@ -16,14 +16,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <!-- Email + phone -->
+    <!--Email + phone-->
     <TextView
         android:id="@+id/tvEmailPhone"
         android:text="jane@x.com • 555-0000"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <!-- Submitted at -->
+    <!--Time: Submitted at-->
     <TextView
         android:id="@+id/tvSubmittedAt"
         android:text="Submitted: 2025-10-27 14:03"
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"/>
 
-    <!-- Student-only: Program of Study -->
+    <!--Student-only: Program of Study-->
     <TextView
         android:id="@+id/tvProgram"
         android:text="Program: Computer Science"
@@ -40,7 +40,7 @@
         android:visibility="gone"
         android:layout_marginTop="4dp"/>
 
-    <!-- Tutor-only: Degree -->
+    <!--Tutor-only: Degree-->
     <TextView
         android:id="@+id/tvDegree"
         android:text="Degree: MSc Mathematics"
@@ -49,7 +49,7 @@
         android:visibility="gone"
         android:layout_marginTop="4dp"/>
 
-    <!-- Tutor-only: Courses Offered -->
+    <!--Tutor-only: Courses Offered-->
     <TextView
         android:id="@+id/tvCourses"
         android:text="Courses: MAT1320, MAT1322"
