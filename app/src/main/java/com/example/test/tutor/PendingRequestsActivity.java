@@ -1,13 +1,15 @@
 package com.example.test.tutor;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
+import android.content.Intent;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.test.R;
 import com.example.test.data.FirebaseRepository;
 import com.example.test.sharedfiles.adapters.PendingSessionRequestAdapter;
@@ -20,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,14 +31,13 @@ import java.util.Map;
 public class PendingRequestsActivity extends AppCompatActivity {
 
     private RecyclerView rvPendingSessions;
-    private Button btnReturnToDashboard;
     private PendingSessionRequestAdapter adapter;
     private FirebaseRepository repository;
     private FirebaseAuth mAuth;
     private String currentTutorId;
 
     private final List<Session> pending = new ArrayList<>();
-    private final Map<String, String> studentNameMap = new HashMap<>();
+    private final Map<String, Student> studentInfoMap = new HashMap<>();
     private final Map<String, String> slotTimeMap = new HashMap<>();
 
     @Override
@@ -56,14 +58,6 @@ public class PendingRequestsActivity extends AppCompatActivity {
         rvPendingSessions = findViewById(R.id.rvPendingRequests);
         rvPendingSessions.setLayoutManager(new LinearLayoutManager(this));
 
-        btnReturnToDashboard = findViewById(R.id.btnReturnToDashboard);
-        btnReturnToDashboard.setOnClickListener(v -> {
-            Intent intent = new Intent(PendingRequestsActivity.this, TutorDashboardActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
-        });
-
         adapter = new PendingSessionRequestAdapter(new PendingSessionRequestAdapter.OnRequestDecisionListener() {
             @Override
             public void onApprove(Session s) {
@@ -82,6 +76,12 @@ public class PendingRequestsActivity extends AppCompatActivity {
                         sessionData.put("startTime", s.getStartTime());
                         sessionData.put("endTime", s.getEndTime());
                         sessionData.put("status", "APPROVED");
+
+                        Student st = studentInfoMap.get(s.getStudentId());
+                        if (st != null) {
+                            sessionData.put("studentEmail", st.getEmail());
+                            sessionData.put("courseName", st.getCourse());
+                        }
 
                         repository.createSessionFromRequest(s.getSessionId(), sessionData);
                         Toast.makeText(PendingRequestsActivity.this, "Approved and moved to sessions", Toast.LENGTH_SHORT).show();
@@ -105,20 +105,27 @@ public class PendingRequestsActivity extends AppCompatActivity {
         });
 
         rvPendingSessions.setAdapter(adapter);
-        loadStudentNamesAndSlotTimes();
+
+        Button btnReturn = findViewById(R.id.btnReturnToDashboard);
+        btnReturn.setOnClickListener(v -> {
+            Intent i = new Intent(PendingRequestsActivity.this, TutorDashboardActivity.class);
+            startActivity(i);
+            finish();
+        });
+
+        loadStudentInfoAndSlots();
     }
 
-    private void loadStudentNamesAndSlotTimes() {
+    private void loadStudentInfoAndSlots() {
         repository.getDatabaseReference("students").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot studentSnap) {
-                studentNameMap.clear();
+                studentInfoMap.clear();
                 for (DataSnapshot s : studentSnap.getChildren()) {
                     Student st = s.getValue(Student.class);
-                    if (st != null) {
-                        studentNameMap.put(s.getKey(), st.getFirstName() + " " + st.getLastName());
-                    }
+                    if (st != null) studentInfoMap.put(s.getKey(), st);
                 }
+
                 repository.getDatabaseReference("slots").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot slotSnap) {
@@ -130,7 +137,7 @@ public class PendingRequestsActivity extends AppCompatActivity {
                                 slotTimeMap.put(s.getKey(), time);
                             }
                         }
-                        loadPendingSlotRequests();
+                        loadPendingRequests();
                     }
 
                     @Override
@@ -147,7 +154,7 @@ public class PendingRequestsActivity extends AppCompatActivity {
         });
     }
 
-    private void loadPendingSlotRequests() {
+    private void loadPendingRequests() {
         repository.getDatabaseReference("StudentSlotRequests").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -158,11 +165,25 @@ public class PendingRequestsActivity extends AppCompatActivity {
                         sess.setSessionId(s.getKey());
                         if ("PENDING".equalsIgnoreCase(sess.getStatus()) &&
                                 ("UNASSIGNED".equals(sess.getTutorId()) || currentTutorId.equals(sess.getTutorId()))) {
+
+                                Student st = studentInfoMap.get(sess.getStudentId());
+                            if (st != null) {
+                                sess.setStudentEmail(st.getEmail());
+                                sess.setCourseName(st.getCourse());
+                            }
+
                             pending.add(sess);
                         }
                     }
                 }
-                adapter.setSessions(pending, studentNameMap);
+
+                // Map student names for adapter
+                Map<String, String> studentNames = new HashMap<>();
+                for (Map.Entry<String, Student> e : studentInfoMap.entrySet()) {
+                    studentNames.put(e.getKey(), e.getValue().getFirstName() + " " + e.getValue().getLastName());
+                }
+
+                adapter.setSessions(pending, studentNames);
             }
 
             @Override

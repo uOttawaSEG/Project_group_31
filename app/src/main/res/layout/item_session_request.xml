@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="12dp"
     android:background="@android:color/white"
-    android:layout_marginBottom="8dp"
+    android:layout_margin="8dp"
     android:elevation="2dp">
 
     <TextView
@@ -14,42 +14,56 @@
         android:layout_height="wrap_content"
         android:text="Student: John Doe"
         android:textStyle="bold"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
 
     <TextView
-        android:id="@+id/tvTimeRequested"
+        android:id="@+id/tvStudentEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Requested Time: 2025-11-11 10:00 - 11:00"
-        android:layout_marginTop="4dp"
-        android:textSize="14sp" />
+        android:text="Email: johndoe@email.com"
+        android:textSize="14sp"
+        android:layout_marginBottom="2dp" />
+
+    <TextView
+        android:id="@+id/tvCourseName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Course: SEG2105"
+        android:textSize="14sp"
+        android:layout_marginBottom="2dp" />
+
+    <TextView
+        android:id="@+id/tvRequestTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Requested Time: 2025-11-11 | 15:30 - 16:30"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="8dp">
+        android:gravity="center">
 
         <Button
-            android:id="@+id/btnAcceptRequest"
+            android:id="@+id/btnApprove"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Accept"
             android:backgroundTint="#4CAF50"
             android:textColor="@android:color/white"
-            android:textAllCaps="false"
-            android:layout_marginEnd="6dp" />
+            android:layout_marginEnd="8dp" />
 
         <Button
-            android:id="@+id/btnRejectRequest"
+            android:id="@+id/btnReject"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Reject"
             android:backgroundTint="#F44336"
-            android:textColor="@android:color/white"
-            android:textAllCaps="false" />
+            android:textColor="@android:color/white" />
     </LinearLayout>
 </LinearLayout>

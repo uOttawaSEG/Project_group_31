@@ -25,5 +25,22 @@ public class Student extends User {
         this.programOfStudy = programOfStudy;
     }
 
+    public String getCourse() {
+        return programOfStudy;
+    }
 
+    public void setCourse(String course) {
+        this.programOfStudy = course;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "firstName='" + getFirstName() + '\'' +
+                ", lastName='" + getLastName() + '\'' +
+                ", email='" + getEmail() + '\'' +
+                ", phoneNumber='" + getPhoneNumber() + '\'' +
+                ", programOfStudy='" + programOfStudy + '\'' +
+                '}';
+    }
 }

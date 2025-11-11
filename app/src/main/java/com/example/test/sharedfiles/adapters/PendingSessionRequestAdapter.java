@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 public class PendingSessionRequestAdapter
         extends RecyclerView.Adapter<PendingSessionRequestAdapter.RequestViewHolder> {
 
@@ -26,7 +25,7 @@ public class PendingSessionRequestAdapter
     }
 
     private final List<Session> requests = new ArrayList<>();
-    private Map<String, String> studentNames; // studentId -> full name
+    private Map<String, String> studentNames;
     private final OnRequestDecisionListener listener;
 
     public PendingSessionRequestAdapter(OnRequestDecisionListener listener) {
@@ -44,27 +43,43 @@ public class PendingSessionRequestAdapter
     @Override
     public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_session_request, parent, false); // ✅ correct layout
+                .inflate(R.layout.item_session_request, parent, false);
         return new RequestViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
-        Session s = requests.get(position);
+        Session session = requests.get(position);
 
-        String name = (studentNames != null) ? studentNames.get(s.getStudentId()) : null;
-        if (name == null) name = "Student ID: " + s.getStudentId();
-        holder.tvStudentName.setText("Student: " + name);
+        String studentName = (studentNames != null) ? studentNames.get(session.getStudentId()) : null;
+        if (studentName == null) studentName = "Student ID: " + session.getStudentId();
 
-        String timeText = "Requested Time: " + s.getDate() + "  " + s.getStartTime() + " - " + s.getEndTime();
-        holder.tvTimeRequested.setText(timeText);
+        holder.tvStudentName.setText("Student: " + studentName);
+
+        if (session.getStudentEmail() != null) {
+            holder.tvStudentEmail.setText("Email: " + session.getStudentEmail());
+            holder.tvStudentEmail.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvStudentEmail.setVisibility(View.GONE);
+        }
+
+        if (session.getCourseName() != null) {
+            holder.tvCourseName.setText("Course: " + session.getCourseName());
+            holder.tvCourseName.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvCourseName.setVisibility(View.GONE);
+        }
+
+        String timeText = "Requested Time: " + session.getDate() + "  " +
+                session.getStartTime() + " - " + session.getEndTime();
+        holder.tvRequestTime.setText(timeText);
 
         holder.btnAcceptRequest.setOnClickListener(v -> {
-            if (listener != null) listener.onApprove(s);
+            if (listener != null) listener.onApprove(session);
         });
 
         holder.btnRejectRequest.setOnClickListener(v -> {
-            if (listener != null) listener.onReject(s);
+            if (listener != null) listener.onReject(session);
         });
     }
 
@@ -75,16 +90,20 @@ public class PendingSessionRequestAdapter
 
     static class RequestViewHolder extends RecyclerView.ViewHolder {
         TextView tvStudentName;
-        TextView tvTimeRequested;
+        TextView tvStudentEmail;
+        TextView tvCourseName;
+        TextView tvRequestTime;
         Button btnAcceptRequest;
         Button btnRejectRequest;
 
         RequestViewHolder(@NonNull View itemView) {
             super(itemView);
             tvStudentName = itemView.findViewById(R.id.tvStudentName);
-            tvTimeRequested = itemView.findViewById(R.id.tvTimeRequested);
-            btnAcceptRequest = itemView.findViewById(R.id.btnAcceptRequest);
-            btnRejectRequest = itemView.findViewById(R.id.btnRejectRequest);
+            tvStudentEmail = itemView.findViewById(R.id.tvStudentEmail);
+            tvCourseName = itemView.findViewById(R.id.tvCourseName);
+            tvRequestTime = itemView.findViewById(R.id.tvRequestTime);
+            btnAcceptRequest = itemView.findViewById(R.id.btnApprove);
+            btnRejectRequest = itemView.findViewById(R.id.btnReject);
         }
     }
 }

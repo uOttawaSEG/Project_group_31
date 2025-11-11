@@ -11,6 +11,9 @@ public class Session {
     private String startTime;
     private String endTime;
 
+    private String courseName;
+    private String studentEmail;
+
     public Session() {
         // Firebase requires an empty constructor
     }
@@ -72,6 +75,11 @@ public class Session {
     public String getEndTime() { return endTime; }
     public void setEndTime(String endTime) { this.endTime = endTime; }
 
+    public String getCourseName() { return courseName; }
+    public void setCourseName(String courseName) { this.courseName = courseName; }
+
+    public String getStudentEmail() { return studentEmail; }
+    public void setStudentEmail(String studentEmail) { this.studentEmail = studentEmail; }
 
     public void approve() {
         this.status = "APPROVED";
