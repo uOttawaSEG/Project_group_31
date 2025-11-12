@@ -1,19 +1,23 @@
 package com.example.test.tutor;
 
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.Toast;
+import android.content.Intent;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.ItemTouchHelper;
 
 import com.example.test.R;
 import com.example.test.data.FirebaseRepository;
-import com.example.test.sharedfiles.adapters.SessionAdapter;
+import com.example.test.sharedfiles.adapters.PendingSessionRequestAdapter;
 import com.example.test.sharedfiles.model.Slot;
 import com.example.test.sharedfiles.model.Session;
 import com.example.test.student.Student;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,25 +30,24 @@ import java.util.Map;
 
 public class PendingRequestsActivity extends AppCompatActivity {
 
-    private RecyclerView rvPendingSessions_REPLACE_WITH_XML_ID;
-
-    private SessionAdapter adapter;
+    private RecyclerView rvPendingSessions;
+    private PendingSessionRequestAdapter adapter;
     private FirebaseRepository repository;
     private FirebaseAuth mAuth;
     private String currentTutorId;
 
     private final List<Session> pending = new ArrayList<>();
-    private final Map<String, String> studentNameMap = new HashMap<>();
+    private final Map<String, Student> studentInfoMap = new HashMap<>();
     private final Map<String, String> slotTimeMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pending_requests_REPLACE_ME);
+        setContentView(R.layout.activity_pending_requests);
 
         repository = new FirebaseRepository();
         mAuth = FirebaseAuth.getInstance();
-        currentTutorId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
+        currentTutorId = (mAuth.getCurrentUser() != null) ? mAuth.getCurrentUser().getUid() : null;
 
         if (currentTutorId == null) {
             Toast.makeText(this, "Error: Not logged in", Toast.LENGTH_SHORT).show();
@@ -52,97 +55,140 @@ public class PendingRequestsActivity extends AppCompatActivity {
             return;
         }
 
-        rvPendingSessions_REPLACE_WITH_XML_ID = findViewById(R.id.rvPendingSessions_REPLACE_WITH_XML_ID);
-        rvPendingSessions_REPLACE_WITH_XML_ID.setLayoutManager(new LinearLayoutManager(this));
+        rvPendingSessions = findViewById(R.id.rvPendingRequests);
+        rvPendingSessions.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new SessionAdapter(/* OnSessionCancelListener */ null, /* showCancelButton */ false);
-        rvPendingSessions_REPLACE_WITH_XML_ID.setAdapter(adapter);
+        adapter = new PendingSessionRequestAdapter(new PendingSessionRequestAdapter.OnRequestDecisionListener() {
+            @Override
+            public void onApprove(Session s) {
+                repository.getDatabaseReference("StudentSlotRequests")
+                        .child(s.getSessionId())
+                        .child("tutorId")
+                        .setValue(currentTutorId);
 
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
-                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override public boolean onMove(@NonNull RecyclerView rv,
-                                            @NonNull RecyclerView.ViewHolder vh,
-                                            @NonNull RecyclerView.ViewHolder tgt) {
-                return false;
-            }
-            @Override public void onSwiped(@NonNull RecyclerView.ViewHolder vh, int dir) {
-                int pos = vh.getBindingAdapterPosition();
-                if (pos < 0 || pos >= pending.size()) return;
+                repository.updateStudentSlotRequestStatus(s.getSessionId(), "APPROVED", task -> {
+                    if (task.isSuccessful()) {
+                        Map<String, Object> sessionData = new HashMap<>();
+                        sessionData.put("tutorId", currentTutorId);
+                        sessionData.put("studentId", s.getStudentId());
+                        sessionData.put("slotId", s.getSlotId());
+                        sessionData.put("date", s.getDate());
+                        sessionData.put("startTime", s.getStartTime());
+                        sessionData.put("endTime", s.getEndTime());
+                        sessionData.put("status", "APPROVED");
 
-                Session s = pending.get(pos);
-                String newStatus = (dir == ItemTouchHelper.RIGHT) ? "APPROVED" : "REJECTED";
+                        Student st = studentInfoMap.get(s.getStudentId());
+                        if (st != null) {
+                            sessionData.put("studentEmail", st.getEmail());
+                            sessionData.put("courseName", st.getCourse());
+                        }
 
-                repository.updateSessionStatus(s.getSessionId(), newStatus, task -> {
-                    if (!task.isSuccessful()) {
-                        Toast.makeText(PendingRequestsActivity.this, "Failed to update", Toast.LENGTH_SHORT).show();
-                        adapter.notifyItemChanged(pos);
+                        repository.createSessionFromRequest(s.getSessionId(), sessionData);
+                        Toast.makeText(PendingRequestsActivity.this, "Approved and moved to sessions", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(PendingRequestsActivity.this,
-                                (newStatus.equals("APPROVED") ? "Approved" : "Rejected"),
-                                Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(PendingRequestsActivity.this, "Failed to approve request", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
-        }).attachToRecyclerView(rvPendingSessions_REPLACE_WITH_XML_ID);
 
-        loadStudentNamesAndSlotTimes();
+            @Override
+            public void onReject(Session s) {
+                repository.updateStudentSlotRequestStatus(s.getSessionId(), "REJECTED", new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(PendingRequestsActivity.this,
+                                task.isSuccessful() ? "Rejected" : "Update failed",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        rvPendingSessions.setAdapter(adapter);
+
+        Button btnReturn = findViewById(R.id.btnReturnToDashboard);
+        btnReturn.setOnClickListener(v -> {
+            Intent i = new Intent(PendingRequestsActivity.this, TutorDashboardActivity.class);
+            startActivity(i);
+            finish();
+        });
+
+        loadStudentInfoAndSlots();
     }
 
-    private void loadStudentNamesAndSlotTimes() {
+    private void loadStudentInfoAndSlots() {
         repository.getDatabaseReference("students").addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot studentSnapshot) {
-                studentNameMap.clear();
-                for (DataSnapshot snap : studentSnapshot.getChildren()) {
-                    Student s = snap.getValue(Student.class);
-                    if (s != null) {
-                        studentNameMap.put(snap.getKey(), s.getFirstName() + " " + s.getLastName());
-                    }
+            @Override
+            public void onDataChange(@NonNull DataSnapshot studentSnap) {
+                studentInfoMap.clear();
+                for (DataSnapshot s : studentSnap.getChildren()) {
+                    Student st = s.getValue(Student.class);
+                    if (st != null) studentInfoMap.put(s.getKey(), st);
                 }
 
                 repository.getDatabaseReference("slots").addValueEventListener(new ValueEventListener() {
-                    @Override public void onDataChange(@NonNull DataSnapshot slotSnapshot) {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot slotSnap) {
                         slotTimeMap.clear();
-                        for (DataSnapshot snap : slotSnapshot.getChildren()) {
-                            Slot sl = snap.getValue(Slot.class);
-                            if (sl != null) {
-                                String time = sl.getDate() + " " + sl.getStartTime();
-                                slotTimeMap.put(snap.getKey(), time);
+                        for (DataSnapshot s : slotSnap.getChildren()) {
+                            Slot slot = s.getValue(Slot.class);
+                            if (slot != null) {
+                                String time = slot.getDate() + " " + slot.getStartTime();
+                                slotTimeMap.put(s.getKey(), time);
                             }
                         }
-                        loadPendingSessions();
+                        loadPendingRequests();
                     }
 
-                    @Override public void onCancelled(@NonNull DatabaseError error) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
                         Toast.makeText(PendingRequestsActivity.this, "Failed to load slots", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
 
-            @Override public void onCancelled(@NonNull DatabaseError error) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(PendingRequestsActivity.this, "Failed to load students", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void loadPendingSessions() {
-        repository.getSessionsByTutor(currentTutorId).addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
+    private void loadPendingRequests() {
+        repository.getDatabaseReference("StudentSlotRequests").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 pending.clear();
                 for (DataSnapshot s : snapshot.getChildren()) {
                     Session sess = s.getValue(Session.class);
                     if (sess != null) {
                         sess.setSessionId(s.getKey());
-                        if ("PENDING".equalsIgnoreCase(sess.getStatus())) {
+                        if ("PENDING".equalsIgnoreCase(sess.getStatus()) &&
+                                ("UNASSIGNED".equals(sess.getTutorId()) || currentTutorId.equals(sess.getTutorId()))) {
+
+                                Student st = studentInfoMap.get(sess.getStudentId());
+                            if (st != null) {
+                                sess.setStudentEmail(st.getEmail());
+                                sess.setCourseName(st.getCourse());
+                            }
+
                             pending.add(sess);
                         }
                     }
                 }
-                adapter.setSessions(pending, studentNameMap, slotTimeMap);
+
+                // Map student names for adapter
+                Map<String, String> studentNames = new HashMap<>();
+                for (Map.Entry<String, Student> e : studentInfoMap.entrySet()) {
+                    studentNames.put(e.getKey(), e.getValue().getFirstName() + " " + e.getValue().getLastName());
+                }
+
+                adapter.setSessions(pending, studentNames);
             }
 
-            @Override public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(PendingRequestsActivity.this, "Failed to load sessions", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(PendingRequestsActivity.this, "Failed to load requests", Toast.LENGTH_SHORT).show();
             }
         });
     }

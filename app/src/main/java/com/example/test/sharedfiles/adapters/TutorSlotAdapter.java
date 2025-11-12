@@ -31,7 +31,7 @@ public class TutorSlotAdapter extends RecyclerView.Adapter<TutorSlotAdapter.Slot
     @Override
     public SlotViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_slot_REPLACE_ME, parent, false);
+                .inflate(R.layout.item_slot, parent, false);
         return new SlotViewHolder(view);
     }
 
@@ -43,9 +43,9 @@ public class TutorSlotAdapter extends RecyclerView.Adapter<TutorSlotAdapter.Slot
                 currentSlot.getStartTime() + " - " +
                 currentSlot.getEndTime();
 
-        holder.tvSlotTime_REPLACE_WITH_XML_ID.setText(dateTime);
+        holder.tvSlotTime.setText(dateTime);
 
-        holder.btnDeleteSlot_REPLACE_WITH_XML_ID.setOnClickListener(new View.OnClickListener() {
+        holder.btnDeleteSlot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (deleteListener != null) {
@@ -70,14 +70,14 @@ public class TutorSlotAdapter extends RecyclerView.Adapter<TutorSlotAdapter.Slot
 
     static class SlotViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvSlotTime_REPLACE_WITH_XML_ID;
-        Button btnDeleteSlot_REPLACE_WITH_XML_ID;
+        TextView tvSlotTime;
+        Button btnDeleteSlot;
 
         public SlotViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            tvSlotTime_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.tvSlotTime_REPLACE_WITH_XML_ID);
-            btnDeleteSlot_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.btnDeleteSlot_REPLACE_WITH_XML_ID);
+            tvSlotTime = itemView.findViewById(R.id.tvSlotTime);
+            btnDeleteSlot = itemView.findViewById(R.id.btnDeleteSlot);
         }
     }
 }

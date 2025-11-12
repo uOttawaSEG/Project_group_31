@@ -2,6 +2,7 @@ package com.example.test.student;
 
 import com.example.test.sharedfiles.model.User;
 
+
 public class Student extends User {
     private String programOfStudy;
 
@@ -22,5 +23,24 @@ public class Student extends User {
     }
     public void setProgramOfStudy(String programOfStudy) {
         this.programOfStudy = programOfStudy;
+    }
+
+    public String getCourse() {
+        return programOfStudy;
+    }
+
+    public void setCourse(String course) {
+        this.programOfStudy = course;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "firstName='" + getFirstName() + '\'' +
+                ", lastName='" + getLastName() + '\'' +
+                ", email='" + getEmail() + '\'' +
+                ", phoneNumber='" + getPhoneNumber() + '\'' +
+                ", programOfStudy='" + programOfStudy + '\'' +
+                '}';
     }
 }

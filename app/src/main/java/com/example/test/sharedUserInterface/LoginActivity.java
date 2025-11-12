@@ -90,11 +90,17 @@ public class LoginActivity extends AppCompatActivity {
                                                                         return;
                                                                     }
 
-                                                                    Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
+                                                                    Intent intent;
+                                                                    if ("Tutor".equals(role)) {
+                                                                        intent = new Intent(LoginActivity.this, com.example.test.tutor.TutorDashboardActivity.class);
+                                                                    } else {
+                                                                        intent = new Intent(LoginActivity.this, com.example.test.student.StudentDashboardActivity.class);
+                                                                    }
                                                                     intent.putExtra("email", email);
                                                                     intent.putExtra("role", role);
                                                                     startActivity(intent);
                                                                     finish();
+
                                                                 }
                                                             })
                                                             .addOnFailureListener(new OnFailureListener() {

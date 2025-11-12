@@ -4,35 +4,42 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="12dp"
-    android:background="#F5F5F5"
-    android:layout_marginBottom="8dp">
+    android:background="@android:color/white"
+    android:layout_marginBottom="8dp"
+    android:elevation="2dp">
 
     <TextView
         android:id="@+id/tvStudentName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Student: Chimdi Okudo"
+        android:text="Student: John Doe"
         android:textStyle="bold"
-        android:textSize="16sp"/>
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/tvSessionTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Time: 2025-02-01 10:00"
-        android:layout_marginTop="2dp"/>
+        android:text="Time: 2025-11-11 10:00 - 11:00"
+        android:layout_marginTop="4dp"
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/tvSessionStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Status: APPROVED"
-        android:layout_marginTop="2dp"/>
+        android:layout_marginTop="2dp"
+        android:textSize="14sp"
+        android:textColor="#757575" />
 
     <Button
         android:id="@+id/btnCancelSession"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Cancel Session"
-        android:layout_marginTop="8dp"/>
+        android:backgroundTint="#F44336"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false"
+        android:layout_marginTop="8dp" />
 </LinearLayout>

@@ -29,7 +29,7 @@ public class RegisterTutorActivity extends AppCompatActivity {
     EditText firstName, lastName, email, password, phone, degree, courses;
     Button registerBtn;
 
-    Switch switchAutoApproval_REPLACE_WITH_XML_ID;
+    Switch switchAutoApproval;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +48,7 @@ public class RegisterTutorActivity extends AppCompatActivity {
         courses = findViewById(R.id.etCourses);
         registerBtn = findViewById(R.id.btnRegister);
 
-        switchAutoApproval_REPLACE_WITH_XML_ID = findViewById(R.id.switchAutoApproval_REPLACE_WITH_XML_ID);
+
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,9 +67,10 @@ public class RegisterTutorActivity extends AppCompatActivity {
         String deg = degree.getText().toString().trim();
         String crs = courses.getText().toString().trim();
 
+
         boolean autoApproved =
-                switchAutoApproval_REPLACE_WITH_XML_ID != null
-                        && switchAutoApproval_REPLACE_WITH_XML_ID.isChecked();
+                switchAutoApproval != null
+                        && switchAutoApproval.isChecked();
 
         if (fName.isEmpty() || lName.isEmpty() || em.isEmpty() ||
                 pw.isEmpty() || ph.isEmpty() || deg.isEmpty() || crs.isEmpty()) {

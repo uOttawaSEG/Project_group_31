@@ -7,6 +7,13 @@ public class Session {
     private String slotId;
     private String status;
 
+    private String date;
+    private String startTime;
+    private String endTime;
+
+    private String courseName;
+    private String studentEmail;
+
     public Session() {
         // Firebase requires an empty constructor
     }
@@ -23,7 +30,6 @@ public class Session {
     public String getSessionId() {
         return sessionId;
     }
-
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
@@ -31,7 +37,6 @@ public class Session {
     public String getTutorId() {
         return tutorId;
     }
-
     public void setTutorId(String tutorId) {
         this.tutorId = tutorId;
     }
@@ -41,7 +46,6 @@ public class Session {
     public String getStudentId() {
         return studentId;
     }
-
     public void setStudentId(String studentId) {
         this.studentId = studentId;
     }
@@ -62,8 +66,20 @@ public class Session {
         this.status = status;
     }
 
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
 
+    public String getStartTime() { return startTime; }
+    public void setStartTime(String startTime) { this.startTime = startTime; }
 
+    public String getEndTime() { return endTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
+
+    public String getCourseName() { return courseName; }
+    public void setCourseName(String courseName) { this.courseName = courseName; }
+
+    public String getStudentEmail() { return studentEmail; }
+    public void setStudentEmail(String studentEmail) { this.studentEmail = studentEmail; }
 
     public void approve() {
         this.status = "APPROVED";

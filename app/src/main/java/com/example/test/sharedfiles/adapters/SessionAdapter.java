@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,8 +23,8 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
     private final boolean showCancelButton;
 
     private Map<String, String> studentNameMap;
-    private Map<String, String> slotTimeMap;
 
+    // Listener interface for cancel button
     public interface OnSessionCancelListener {
         void onSessionCancel(Session session);
     }
@@ -37,7 +38,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
     @Override
     public SessionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_session_REPLACE_ME, parent, false);
+                .inflate(R.layout.item_session, parent, false);
         return new SessionViewHolder(view);
     }
 
@@ -45,38 +46,30 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
     public void onBindViewHolder(@NonNull SessionViewHolder holder, int position) {
         Session currentSession = sessionList.get(position);
 
-        String studentName = "Loading...";
-        if (studentNameMap != null) {
-            studentName = studentNameMap.get(currentSession.getStudentId());
+        String studentName = "Unknown Student";
+        if (studentNameMap != null && currentSession.getStudentId() != null) {
+            String name = studentNameMap.get(currentSession.getStudentId());
+            if (name != null) {
+                studentName = name;
+            }
         }
-        if (studentName == null) {
-            studentName = "Student ID: " + currentSession.getStudentId();
-        }
-        holder.tvStudentName_REPLACE_WITH_XML_ID.setText("Student: " + studentName);
+        holder.tvStudentName.setText("Student: " + studentName);
 
-        String sessionTime = "Loading...";
-        if (slotTimeMap != null) {
-            sessionTime = slotTimeMap.get(currentSession.getSlotId());
-        }
-        if (sessionTime == null) {
-            sessionTime = "Slot ID: " + currentSession.getSlotId();
-        }
-        holder.tvSessionTime_REPLACE_WITH_XML_ID.setText("Time: " + sessionTime);
+        String sessionTime = "Date: " + currentSession.getDate()
+                + " | " + currentSession.getStartTime() + " - " + currentSession.getEndTime();
+        holder.tvSessionTime.setText(sessionTime);
 
-        holder.tvSessionStatus_REPLACE_WITH_XML_ID.setText("Status: " + currentSession.getStatus());
+        holder.tvSessionStatus.setText("Status: " + currentSession.getStatus());
 
         if (showCancelButton) {
-            holder.btnCancelSession_REPLACE_WITH_XML_ID.setVisibility(View.VISIBLE);
-            holder.btnCancelSession_REPLACE_WITH_XML_ID.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (cancelListener != null) {
-                        cancelListener.onSessionCancel(currentSession);
-                    }
+            holder.btnCancelSession.setVisibility(View.VISIBLE);
+            holder.btnCancelSession.setOnClickListener(v -> {
+                if (cancelListener != null) {
+                    cancelListener.onSessionCancel(currentSession);
                 }
             });
         } else {
-            holder.btnCancelSession_REPLACE_WITH_XML_ID.setVisibility(View.GONE);
+            holder.btnCancelSession.setVisibility(View.GONE);
         }
     }
 
@@ -85,30 +78,28 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
         return sessionList.size();
     }
 
-    public void setSessions(List<Session> sessions, Map<String, String> studentNames, Map<String, String> slotTimes) {
+    public void setSessions(List<Session> sessions, Map<String, String> studentNames) {
         this.sessionList.clear();
         if (sessions != null) {
             this.sessionList.addAll(sessions);
         }
         this.studentNameMap = studentNames;
-        this.slotTimeMap = slotTimes;
         notifyDataSetChanged();
     }
 
-    static class SessionViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvStudentName_REPLACE_WITH_XML_ID;
-        TextView tvSessionTime_REPLACE_WITH_XML_ID;
-        TextView tvSessionStatus_REPLACE_WITH_XML_ID;
-        Button btnCancelSession_REPLACE_WITH_XML_ID;
+    static class SessionViewHolder extends RecyclerView.ViewHolder {
+        TextView tvStudentName;
+        TextView tvSessionTime;
+        TextView tvSessionStatus;
+        Button btnCancelSession;
 
         public SessionViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            tvStudentName_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.tvStudentName_REPLACE_WITH_XML_ID);
-            tvSessionTime_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.tvSessionTime_REPLACE_WITH_XML_ID);
-            tvSessionStatus_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.tvSessionStatus_REPLACE_WITH_XML_ID);
-            btnCancelSession_REPLACE_WITH_XML_ID = itemView.findViewById(R.id.btnCancelSession_REPLACE_WITH_XML_ID);
+            tvStudentName = itemView.findViewById(R.id.tvStudentName);
+            tvSessionTime = itemView.findViewById(R.id.tvSessionTime);
+            tvSessionStatus = itemView.findViewById(R.id.tvSessionStatus);
+            btnCancelSession = itemView.findViewById(R.id.btnCancelSession);
         }
     }
 }
