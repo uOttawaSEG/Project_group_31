@@ -1,0 +1,37 @@
+# tells CircleCI the configuration format version to use
+version: 2.1
+
+#  provides an android environment (with SDKs, Gradle, etc.) pre-installed
+orbs:
+  android: circleci/android@2.2.0
+
+# the jobs section defines what tasks CircleCI will run
+jobs:
+  build:     # names the job "build"
+    executor:
+      name: android/android-machine
+      resource-class: large
+    steps:
+      # Step 1: check out the code from the github repository
+      - checkout
+
+      # Step 2: deletes old build files
+      - run:
+          name: Clean project
+          command: ./gradlew clean
+
+      # Step 3: build the debug APK (same one Android Studio makes when you click Run)
+      - run:
+          name: Build Debug APK
+          command: ./gradlew assembleDebug
+
+      # Step 4: looks in app/src/test/java and runs all test files there
+      - run:
+          name: Run Unit Tests
+          command: ./gradlew test
+
+# this section defines "when and how" jobs run
+workflows:
+  build_and_test:
+    jobs:
+      - build
