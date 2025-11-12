@@ -1,7 +1,7 @@
 # tells CircleCI the configuration format version to use
 version: 2.1
 
-#  provides an android environment (with SDKs, Gradle, etc.) pre-installed
+#  provides an pre-installed android environment 
 orbs:
   android: circleci/android@2.2.0
 
@@ -10,7 +10,7 @@ jobs:
   build:     # names the job "build"
     executor:
       name: android/android-machine
-      tag: '2024.01'
+      tag: "2024.01"
       resource-class: large
     steps:
       # Step 1: check out the code from the github repository
@@ -21,7 +21,7 @@ jobs:
           name: Clean project
           command: ./gradlew clean
 
-      # Step 3: build the debug APK (same one Android Studio makes when you click Run)
+      # Step 3: build the debug APK which is the same in Android Studio when we click run
       - run:
           name: Build Debug APK
           command: ./gradlew assembleDebug
@@ -31,7 +31,7 @@ jobs:
           name: Run Unit Tests
           command: ./gradlew test
 
-# this section defines "when and how" jobs run
+# it defines when and how the job will run
 workflows:
   build_and_test:
     jobs:
