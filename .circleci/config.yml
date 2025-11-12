@@ -10,6 +10,7 @@ jobs:
   build:     # names the job "build"
     executor:
       name: android/android-machine
+      tag: 2024.01
       resource-class: large
     steps:
       # Step 1: check out the code from the github repository
