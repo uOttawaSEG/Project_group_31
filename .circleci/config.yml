@@ -6,6 +6,10 @@ jobs:
       - image: cimg/android:2024.01
     steps:
       - checkout # we check out the code from github repo
+      
+      - run:
+          name: Grant execute permission for Gradle wrapper
+          command: chmod +x ./gradlew
 
       - run: #delete old build files
           name: Clean project
