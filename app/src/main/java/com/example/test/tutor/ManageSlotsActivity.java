@@ -167,22 +167,67 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                 Toast.makeText(this, "End time must be after start time", Toast.LENGTH_LONG).show();
                 return;
             }
-            Slot newSlot = new Slot();
-            newSlot.setTutorId(currentTutorId);
-            newSlot.setDate(date);
-            newSlot.setStartTime(startTime);
-            newSlot.setEndTime(endTime);
-            newSlot.setRequiresApproval(false);
-            newSlot.setIsAvailable(true);
+            DatabaseReference slotsRef = FirebaseDatabase.getInstance().getReference("slots");
+            slotsRef.orderByChild("tutorId").equalTo(currentTutorId)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            boolean overlap = false;
+                            int newStart = toMinutes(startTime);
+                            int newEnd = toMinutes(endTime);
 
-            repository.addSlot(newSlot, task -> {
-                if (task.isSuccessful()) {
-                    Toast.makeText(this, "Slot added: " + date + " " + startTime +
-                            " - " + endTime, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Failed to add slot", Toast.LENGTH_SHORT).show();
-                }
-            });
+                            for (DataSnapshot s : snapshot.getChildren()) {
+                                String existingDate = s.child("date").getValue(String.class);
+                                String existingStart = s.child("startTime").getValue(String.class);
+                                String existingEnd = s.child("endTime").getValue(String.class);
+
+                                if (existingDate == null || existingStart == null || existingEnd == null)
+                                    continue;
+
+                                if (existingDate.equals(date)) {
+                                    int existStart = toMinutes(existingStart);
+                                    int existEnd = toMinutes(existingEnd);
+
+                                    // Check for overlap
+                                    if (newStart < existEnd && newEnd > existStart) {
+                                        overlap = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (overlap) {
+                                Toast.makeText(ManageSlotsActivity.this,
+                                        "this slot is overlapped!",
+                                        Toast.LENGTH_LONG).show();
+                            } else {
+                                Slot newSlot = new Slot();
+                                newSlot.setTutorId(currentTutorId);
+                                newSlot.setDate(date);
+                                newSlot.setStartTime(startTime);
+                                newSlot.setEndTime(endTime);
+                                newSlot.setRequiresApproval(false);
+                                newSlot.setIsAvailable(true);
+
+                                repository.addSlot(newSlot, task -> {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(ManageSlotsActivity.this,
+                                                "Slot added: " + date + " " + startTime +
+                                                        " - " + endTime, Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(ManageSlotsActivity.this,
+                                                "Failed to add slot", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(ManageSlotsActivity.this,
+                                    "Error checking existing slots", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
         } catch (Exception e) {
             Toast.makeText(this, "Error validating slot: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -237,5 +282,15 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                 }
             }
         });
+    }
+    private int toMinutes(String time) {
+        try {
+            String[] parts = time.split(":");
+            int h = Integer.parseInt(parts[0]);
+            int m = Integer.parseInt(parts[1]);
+            return h * 60 + m;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

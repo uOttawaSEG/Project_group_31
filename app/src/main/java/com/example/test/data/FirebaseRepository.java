@@ -120,20 +120,19 @@ public class FirebaseRepository {
                 .equalTo(studentId);
     }
 
-    public void createSessionFromRequest(String requestId, Map<String, Object> requestData) {
-        DatabaseReference sessionsRef = FirebaseDatabase.getInstance()
-                .getReference("sessions");
+    public void createSessionFromRequest(String requestId, Map<String, Object> sessionData) {
+        DatabaseReference sessionsRef = FirebaseDatabase.getInstance().getReference("sessions");
+        String newSessionId = sessionsRef.push().getKey(); // always create a fresh ID
 
-        String newSessionId = sessionsRef.push().getKey();
         if (newSessionId != null) {
-            sessionsRef.child(newSessionId).setValue(requestData)
-                    .addOnSuccessListener(aVoid -> {
-                        FirebaseDatabase.getInstance().getReference("StudentSlotRequests")
-                                .child(requestId)
-                                .removeValue();
-                    })
+            sessionData.put("sessionId", newSessionId);
+            sessionsRef.child(newSessionId).setValue(sessionData)
+                    .addOnSuccessListener(aVoid ->
+                            Log.d("FirebaseRepository", "Session created successfully: " + newSessionId))
                     .addOnFailureListener(e ->
                             Log.e("FirebaseRepository", "Failed to create session", e));
+        } else {
+            Log.e("FirebaseRepository", "Failed to generate sessionId");
         }
     }
 

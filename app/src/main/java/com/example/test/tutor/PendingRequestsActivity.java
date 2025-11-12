@@ -80,7 +80,7 @@ public class PendingRequestsActivity extends AppCompatActivity {
                         Student st = studentInfoMap.get(s.getStudentId());
                         if (st != null) {
                             sessionData.put("studentEmail", st.getEmail());
-                            sessionData.put("courseName", st.getCourse());
+                            sessionData.put("courseName", st.getProgramOfStudy());
                         }
 
                         repository.createSessionFromRequest(s.getSessionId(), sessionData);

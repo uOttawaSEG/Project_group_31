@@ -142,7 +142,6 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
             return;
         }
 
-        // validate that date/time are in the future
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
             Date startDateTime = sdf.parse(date + " " + start);
@@ -169,7 +168,6 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
             return;
         }
 
-        // create the session
         String tutorId = tutorIds.get(spTutor.getSelectedItemPosition());
         boolean autoApproval = autoApprovalMap.getOrDefault(tutorId, false);
         String status = autoApproval ? "APPROVED" : "PENDING";
@@ -188,12 +186,31 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
         session.setEndTime(end);
 
         requestsRef.child(requestId).setValue(session)
-                .addOnSuccessListener(a ->
-                        Toast.makeText(this,
-                                autoApproval ? "Request auto-approved!" : "Request sent!",
-                                Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(this,
+                            autoApproval ? "Request auto-approved!" : "Request sent!",
+                            Toast.LENGTH_SHORT).show();
+
+                    if (autoApproval) {
+                        DatabaseReference sessionsRef = FirebaseDatabase.getInstance().getReference("sessions");
+                        String sessionId = sessionsRef.push().getKey();
+                        if (sessionId != null) {
+                            Map<String, Object> sessionData = new HashMap<>();
+                            sessionData.put("sessionId", sessionId);
+                            sessionData.put("tutorId", tutorId);
+                            sessionData.put("studentId", studentId);
+                            sessionData.put("slotId", requestId); // optional link back
+                            sessionData.put("date", date);
+                            sessionData.put("startTime", start);
+                            sessionData.put("endTime", end);
+                            sessionData.put("status", "APPROVED");
+
+                            sessionsRef.child(sessionId).setValue(sessionData);
+                        }
+                    }
+                })
                 .addOnFailureListener(e ->
                         Toast.makeText(this,
-                                "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    }
-}
+                                "Failed: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
+    }}
