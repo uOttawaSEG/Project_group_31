@@ -15,7 +15,7 @@ public class Session {
     private String studentEmail;
 
     public Session() {
-        // Firebase requires an empty constructor
+        // Firebase need an empty constructor
     }
 
     public Session(String tutorId, String studentId, String slotId, String status) {

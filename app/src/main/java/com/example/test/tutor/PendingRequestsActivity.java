@@ -177,7 +177,6 @@ public class PendingRequestsActivity extends AppCompatActivity {
                     }
                 }
 
-                // Map student names for adapter
                 Map<String, String> studentNames = new HashMap<>();
                 for (Map.Entry<String, Student> e : studentInfoMap.entrySet()) {
                     studentNames.put(e.getKey(), e.getValue().getFirstName() + " " + e.getValue().getLastName());

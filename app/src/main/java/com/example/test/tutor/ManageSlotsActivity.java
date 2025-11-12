@@ -86,8 +86,6 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
     private void setupAutoApprovalSwitch() {
         DatabaseReference tutorRef = FirebaseDatabase.getInstance()
                 .getReference("tutors").child(currentTutorId);
-
-        // Load the current value when opening the page
         tutorRef.child("autoApproval").get().addOnSuccessListener(snapshot -> {
             if (snapshot.exists()) {
                 Boolean auto = snapshot.getValue(Boolean.class);

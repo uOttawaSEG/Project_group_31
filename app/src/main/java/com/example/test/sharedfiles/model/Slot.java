@@ -15,7 +15,7 @@ public class Slot {
     private boolean isAvailable;
 
     public Slot() {
-        // Firebase requires an empty constructor
+        // Firebase needs an empty constructor
     }
 
     public Slot (String tutorId, String date, String startTime, String endTime, boolean requiresApproval, boolean isAvailable) {

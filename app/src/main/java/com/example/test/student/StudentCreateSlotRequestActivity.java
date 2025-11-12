@@ -45,7 +45,7 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
 
         loadTutorsIntoSpinner();
 
-        // open pickers on tap
+        // help to open pickers on tap
         etDate.setOnClickListener(v -> showDatePicker());
         etStart.setOnClickListener(v -> showTimePicker(etStart, "Select Start Time"));
         etEnd.setOnClickListener(v -> showTimePicker(etEnd, "Select End Time"));
@@ -68,7 +68,7 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
                 now.get(Calendar.MONTH),
                 now.get(Calendar.DAY_OF_MONTH)
         );
-        // prevent choosing past dates
+        // prevent the tutor from  choosing past dates
         picker.getDatePicker().setMinDate(System.currentTimeMillis());
         picker.setTitle("Select Date");
         picker.show();

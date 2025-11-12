@@ -21,12 +21,12 @@ public class StudentDashboardActivity extends AppCompatActivity {
         Button btnView = findViewById(R.id.btnViewSessions);
         Button btnLogout = findViewById(R.id.btnLogout);
 
-        // Open BookSlotActivity
+        // this will open BookSlotActivity
         btnBook.setOnClickListener(v ->
                 startActivity(new Intent(StudentDashboardActivity.this, StudentCreateSlotRequestActivity.class))
         );
 
-        // (Optional) future feature: show student’s booked sessions
+        // Prepare for delivarable 4:  show student’s booked sessions ( this will be done next delivarable)
         btnView.setOnClickListener(v ->
                 Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()
         );
