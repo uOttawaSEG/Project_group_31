@@ -4,9 +4,10 @@ jobs:
   build:
     docker:
       - image: cimg/android:2024.01
+    working_directory: ~/project
     steps:
       - checkout # we check out the code from github repo
-      
+
       - run:
           name: Grant execute permission for Gradle wrapper
           command: chmod +x ./gradlew
