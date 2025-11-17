@@ -1,5 +1,6 @@
 package com.example.test.tutor;
 
+import com.example.test.sharedfiles.model.Rating;
 import com.example.test.sharedfiles.model.Session;
 import com.example.test.sharedfiles.model.Slot;
 import com.example.test.sharedfiles.model.User;
@@ -16,6 +17,9 @@ public class Tutor extends User {
     private List<Slot> slots;
     private List<Session> sessions;
 
+    private double averageRating;       // the average rating that the tutor received
+    private List<Rating> ratings;      // All of tutor's ratings
+
     public Tutor() {
         // Firebase needs an empty constructor
     }
@@ -29,9 +33,11 @@ public class Tutor extends User {
         this.autoApproval = false; // default: manual approval
         this.slots = new ArrayList<>();
         this.sessions = new ArrayList<>();
+        this.averageRating = 0.0;
+        this.ratings = new ArrayList<>();
     }
 
-    // Getters and Setters
+    // getter and setter methods which allow other class to read and update them
     public String getHighestDegree() {
         return highestDegree;
     }
@@ -71,7 +77,45 @@ public class Tutor extends User {
     public void setSessions(List<Session> sessions) {
         this.sessions = (sessions != null) ? sessions : new ArrayList<>();
     }
+    // return the average rating
+    public double getAverageRating() {
+        return averageRating;
+    }
+    // return all the rating
+    public List<Rating> getRatings() {
+        return ratings;
+    }
 
+    // it starts recalculating the average rating whenvever there is a new rating
+    public void setRatings(List<Rating> ratings) {
+        this.ratings = (ratings != null) ? ratings : new ArrayList<>();
+        calculateAverageRating();
+    }
+
+    // this method add rating from student
+    public void addRating(Rating rating) {
+        if (rating != null) {
+            ratings.add(rating);
+            calculateAverageRating();
+        }
+    }
+
+    // this method calcualte the average rating
+    public void calculateAverageRating() {
+        if (ratings == null || ratings.isEmpty()) {
+            averageRating = 0.0;
+            return;
+        }
+
+        double total = 0.0;
+        for (Rating r : ratings) {
+            total += r.getStars();
+        }
+
+        averageRating = total / ratings.size();
+    }
+
+    // tutor can control the status the session
     public void approveSession(Session session) {
         if (session != null) session.approve();
     }

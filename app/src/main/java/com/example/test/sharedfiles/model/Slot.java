@@ -14,20 +14,29 @@ public class Slot {
     private boolean requiresApproval;
     private boolean isAvailable;
 
+    private boolean isBooked;     // check if student has booked this slot
+    private String bookingId;
+
     public Slot() {
-        // Firebase needs an empty constructor
+        // Firebase need this empty constructor
     }
 
-    public Slot (String tutorId, String date, String startTime, String endTime, boolean requiresApproval, boolean isAvailable) {
+    public Slot(String tutorId, String date, String startTime, String endTime,
+                boolean requiresApproval, boolean isAvailable) {
+
         this.tutorId = tutorId;
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
+
         this.requiresApproval = requiresApproval;
         this.isAvailable = isAvailable;
+
+        this.isBooked = false;   // we set its default to be false because it's not booked yet
+        this.bookingId = null;   //  we set its default to be null because the slot is not booked yet
     }
 
-    //Getters and Setters
+    // getter and setter methods which allow other class to read and update them
     public String getSlotId() {
         return slotId;
     }
@@ -89,6 +98,23 @@ public class Slot {
         this.isAvailable = isAvailable;
 
     }
+   // method to check if slot is booked or not
+    public boolean isBooked() {
+        return isBooked;
+    }
+    // update the booking status of this slot
+    public void setBooked(boolean booked) {
+        this.isBooked = booked;
+    }
+    // Get the bookingID for this slot
+    public String getBookingId() {
+        return bookingId;
+    }
+    // update the bookingID of this slot
+    public void setBookingId(String bookingId) {
+        this.bookingId = bookingId;
+    }
+
 
     //checks if the slot is from the past
     public boolean isPast() {

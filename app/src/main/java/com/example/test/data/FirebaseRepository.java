@@ -15,6 +15,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.example.test.sharedfiles.model.StudentBooking;
+
 
 public class FirebaseRepository {
 
@@ -163,6 +165,51 @@ public class FirebaseRepository {
         return db.child("StudentSlotRequests")
                 .orderByChild("tutorId").equalTo(tutorId);
     }
+
+    // this go to the bookings section in database and then create each booking with an unique ID
+    public void addStudentBooking(StudentBooking booking) {
+        String id = db.child("bookings").push().getKey();
+        booking.setBookingId(id);
+
+        db.child("bookings").child(id).setValue(booking);
+    }
+    // this will show the booking that corresponds to the student based on their student ID
+    public Query getBookingsByStudent(String studentId) {
+        return db.child("bookings")
+                .orderByChild("studentId")
+                .equalTo(studentId);
+    }
+    // Using student ID, their booking status can be changed to cancelled and then update the status
+    public void cancelBooking(String bookingId,String slotId) {
+        db.child("bookings")
+                .child(bookingId)
+                .child("status")
+                .setValue("Cancelled");
+        updateSlotBooking(slotId, false, null);
+    }
+    // we mark the slot of the tutor is already booked or not based on its current status
+    public void updateSlotBooking(String slotId, boolean isBooked, String bookingId) {
+
+        // Update slot booking state
+        db.child("slots")
+                .child(slotId)
+                .child("isBooked")
+                .setValue(isBooked);
+
+        // Update or clear booking id
+        if (isBooked) {
+            db.child("slots")
+                    .child(slotId)
+                    .child("bookingId")
+                    .setValue(bookingId);
+        } else {
+            db.child("slots")
+                    .child(slotId)
+                    .child("bookingId")
+                    .setValue(null);
+        }
+    }
+
 
 
     public DatabaseReference getDatabaseReference(String path) {
