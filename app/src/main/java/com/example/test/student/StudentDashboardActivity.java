@@ -3,7 +3,7 @@ package com.example.test.student;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 
@@ -17,18 +17,23 @@ public class StudentDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_dashboard);
 
-        Button btnBook = findViewById(R.id.btnBookSlot);
-        Button btnView = findViewById(R.id.btnViewSessions);
+        Button btnBrowseSessions = findViewById(R.id.btnBrowseSessions);
+        Button btnMyBookings = findViewById(R.id.btnMyBookings);
+        Button btnPastSessions = findViewById(R.id.btnPastSessions);
         Button btnLogout = findViewById(R.id.btnLogout);
 
         // this will open BookSlotActivity
-        btnBook.setOnClickListener(v ->
-                startActivity(new Intent(StudentDashboardActivity.this, StudentCreateSlotRequestActivity.class))
+        btnBrowseSessions.setOnClickListener(v ->
+                startActivity(new Intent(this, BrowseSessionsActivity.class))
         );
 
         // Prepare for delivarable 4:  show student’s booked sessions ( this will be done next delivarable)
-        btnView.setOnClickListener(v ->
-                Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()
+        btnMyBookings.setOnClickListener(v ->
+                startActivity(new Intent(this, BookingsActivity.class))
+        );
+
+        btnPastSessions.setOnClickListener(v ->
+                startActivity(new Intent(this, PastSessionActivity.class))
         );
 
         // Log out

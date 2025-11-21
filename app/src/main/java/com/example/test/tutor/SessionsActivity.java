@@ -48,7 +48,7 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sessions);
+        setContentView(R.layout.activity_tutor_sessions);
 
         mAuth = FirebaseAuth.getInstance();
         currentTutorId = (mAuth.getCurrentUser() != null)

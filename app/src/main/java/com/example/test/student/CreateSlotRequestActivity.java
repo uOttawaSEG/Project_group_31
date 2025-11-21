@@ -15,7 +15,7 @@ import com.google.firebase.database.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class StudentCreateSlotRequestActivity extends AppCompatActivity {
+public class CreateSlotRequestActivity extends AppCompatActivity {
 
     private Spinner spTutor;
     private EditText etDate, etStart, etEnd;
@@ -112,7 +112,7 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
                 }
 
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        StudentCreateSlotRequestActivity.this,
+                        CreateSlotRequestActivity.this,
                         android.R.layout.simple_spinner_dropdown_item,
                         tutorNames
                 );
@@ -121,7 +121,7 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(StudentCreateSlotRequestActivity.this,
+                Toast.makeText(CreateSlotRequestActivity.this,
                         "Failed to load tutors", Toast.LENGTH_SHORT).show();
             }
         });
@@ -180,7 +180,17 @@ public class StudentCreateSlotRequestActivity extends AppCompatActivity {
             return;
         }
 
-        Session session = new Session(tutorId, studentId, requestId, status);
+        Session session = new Session(
+                requestId,
+                tutorId,
+                studentId,
+                requestId,
+                date,
+                start,
+                end,
+                "",
+                status
+        );
         session.setDate(date);
         session.setStartTime(start);
         session.setEndTime(end);

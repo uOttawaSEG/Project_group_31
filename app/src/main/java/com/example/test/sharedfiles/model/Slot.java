@@ -98,6 +98,10 @@ public class Slot {
         this.isAvailable = isAvailable;
 
     }
+
+    public void setIsBooked(boolean b) {
+        isBooked = b;
+    }
    // method to check if slot is booked or not
     public boolean isBooked() {
         return isBooked;
@@ -158,5 +162,9 @@ public class Slot {
             return false;
         }
 
+    }
+
+    public boolean getIsBooked() {
+        return isBooked;
     }
 }

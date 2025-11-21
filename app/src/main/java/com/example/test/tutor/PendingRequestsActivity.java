@@ -43,7 +43,7 @@ public class PendingRequestsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pending_requests);
+        setContentView(R.layout.activity_tutor_pending_requests);
 
         repository = new FirebaseRepository();
         mAuth = FirebaseAuth.getInstance();

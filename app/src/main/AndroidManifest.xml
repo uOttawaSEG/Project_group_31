@@ -53,7 +53,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".student.StudentCreateSlotRequestActivity" />
+            android:name=".student.CreateSlotRequestActivity" />
 
         <activity android:name=".student.StudentDashboardActivity" />
 
