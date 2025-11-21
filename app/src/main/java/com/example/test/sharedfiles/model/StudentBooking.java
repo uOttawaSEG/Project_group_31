@@ -8,6 +8,7 @@ public class StudentBooking {
     private String sessionId;
     private String studentId;
     private String tutorId;
+    private String tutorName;
     private String courseCode;
     private String date;
     private String startTime;
@@ -20,7 +21,7 @@ public class StudentBooking {
         // Firebase need this empty constructor
     }
 
-    public StudentBooking(String bookingId, String sessionId, String studentId, String tutorId,
+    public StudentBooking(String bookingId, String sessionId, String studentId, String tutorId, String tutorName,
                           String courseCode, String date, String startTime, String endTime,
                           String status, String slotId) {
 
@@ -28,6 +29,7 @@ public class StudentBooking {
         this.sessionId = sessionId;
         this.studentId = studentId;
         this.tutorId = tutorId;
+        this.tutorName = tutorName;
         this.courseCode = courseCode;
 
         this.date = date;
@@ -53,6 +55,9 @@ public class StudentBooking {
 
     public String getTutorId() { return tutorId; }
     public void setTutorId(String tutorId) { this.tutorId = tutorId; }
+
+    public String getTutorName() { return tutorName; }
+    public void setTutorName(String tutorName) { this.tutorName = tutorName; }
 
     public String getCourseCode() { return courseCode; }
     public void setCourseCode(String courseCode) { this.courseCode = courseCode; }

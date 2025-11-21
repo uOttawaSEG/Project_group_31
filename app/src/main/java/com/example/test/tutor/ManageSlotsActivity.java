@@ -165,6 +165,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                 Toast.makeText(this, "End time must be after start time", Toast.LENGTH_LONG).show();
                 return;
             }
+
             DatabaseReference slotsRef = FirebaseDatabase.getInstance().getReference("slots");
             slotsRef.orderByChild("tutorId").equalTo(currentTutorId)
                     .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -186,7 +187,6 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                                     int existStart = toMinutes(existingStart);
                                     int existEnd = toMinutes(existingEnd);
 
-                                    // Check for overlap
                                     if (newStart < existEnd && newEnd > existStart) {
                                         overlap = true;
                                         break;
@@ -196,7 +196,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
 
                             if (overlap) {
                                 Toast.makeText(ManageSlotsActivity.this,
-                                        "this slot is overlapped!",
+                                        "This slot overlaps with an existing one!",
                                         Toast.LENGTH_LONG).show();
                             } else {
                                 Slot newSlot = new Slot();
@@ -206,6 +206,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                                 newSlot.setEndTime(endTime);
                                 newSlot.setRequiresApproval(false);
                                 newSlot.setIsAvailable(true);
+                                newSlot.setIsBooked(false);
 
                                 repository.addSlot(newSlot, task -> {
                                     if (task.isSuccessful()) {
@@ -260,6 +261,11 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
 
     @Override
     public void onSlotDelete(Slot slot) {
+        if (slot.getIsBooked()) {
+            Toast.makeText(this, "Cannot delete a slot that has a booked session.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         String key = slot.getSlotId();
         if (key == null) key = slotKeyMap.get(slot);
 
@@ -281,6 +287,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
             }
         });
     }
+
     private int toMinutes(String time) {
         try {
             String[] parts = time.split(":");
