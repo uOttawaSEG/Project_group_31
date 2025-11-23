@@ -3,22 +3,225 @@ package com.example.test.student;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.text.TextUtils;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.test.R;
+import com.example.test.data.FirebaseRepository;
+import com.example.test.sharedfiles.adapters.AvailableSlotAdapter;
+import com.example.test.sharedfiles.model.Slot;
+import com.example.test.sharedfiles.model.StudentBooking;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.test.R;
-
 public class BrowseSessionsActivity extends AppCompatActivity {
+
+    private EditText etCourseSearch;
+    private Button btnSearch;
+    private Button btnCreateSlot;
+    private RecyclerView rvAvailableSlots;
+
+    private FirebaseRepository repository;
+    private String studentId;
+
+    private final List<Slot> slots = new ArrayList<>();
+    private AvailableSlotAdapter slotAdapter;
+
+    private final SimpleDateFormat dateFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_browse_sessions);
 
-        Button btnCreateSlot = findViewById(R.id.btnCreateSlot);
+        repository = new FirebaseRepository();
+        studentId = repository.getCurrentUserId();
 
-        // this will open BookSlotActivity
+        if (studentId == null) {
+            Toast.makeText(this, "Student not logged in", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        etCourseSearch = findViewById(R.id.etCourseSearch);
+        btnSearch = findViewById(R.id.btnSearch);
+        btnCreateSlot = findViewById(R.id.btnCreateSlot);
+        rvAvailableSlots = findViewById(R.id.rvAvailableSlots);
+
+        rvAvailableSlots.setLayoutManager(new LinearLayoutManager(this));
+        slotAdapter = new AvailableSlotAdapter(slots, this::onBookClicked);
+        rvAvailableSlots.setAdapter(slotAdapter);
+
+        btnSearch.setOnClickListener(v -> searchSlots());
+
         btnCreateSlot.setOnClickListener(v ->
-                startActivity(new Intent(BrowseSessionsActivity.this, CreateSlotRequestActivity.class))
+                startActivity(new Intent(BrowseSessionsActivity.this,
+                        CreateSlotRequestActivity.class))
         );
     }
+
+    private void searchSlots() {
+        String code = etCourseSearch.getText().toString().trim().toUpperCase(Locale.getDefault());
+
+        if (TextUtils.isEmpty(code)) {
+            Toast.makeText(this, "Enter course code", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Query q = repository.getDatabaseReference("slots")
+                .orderByChild("courseCode")
+                .equalTo(code);
+
+        q.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                slots.clear();
+
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    Slot slot = s.getValue(Slot.class);
+                    if (slot == null) continue;
+
+                    slot.setSlotId(s.getKey());
+
+                    if (slot.isPast()) continue;
+                    if (!slot.isAvailable()) continue;
+                    if (slot.getIsBooked()) continue;
+
+                    slots.add(slot);
+                }
+
+                slotAdapter.notifyDataSetChanged();
+
+                if (slots.isEmpty()) {
+                    Toast.makeText(BrowseSessionsActivity.this,
+                            "No available slots found", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(BrowseSessionsActivity.this,
+                        "Failed to load slots", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void onBookClicked(Slot slot) {
+        if (slot == null || slot.getSlotId() == null) {
+            Toast.makeText(this, "Invalid slot", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        checkConflicts(slot, hasConflict -> {
+            if (hasConflict) {
+                Toast.makeText(this,
+                        "There is already a booking scheduled during this time",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                createBooking(slot);
+            }
+        });
+    }
+
+    private void checkConflicts(Slot newSlot, ConflictCallback cb) {
+        repository.getBookingsByStudent(studentId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        try {
+                            long newStart = dateFormat
+                                    .parse(newSlot.getDate() + " " + newSlot.getStartTime())
+                                    .getTime();
+                            long newEnd = dateFormat
+                                    .parse(newSlot.getDate() + " " + newSlot.getEndTime())
+                                    .getTime();
+
+                            for (DataSnapshot s : snapshot.getChildren()) {
+                                StudentBooking b = s.getValue(StudentBooking.class);
+                                if (b == null) continue;
+
+                                if ("Cancelled".equalsIgnoreCase(b.getStatus())) continue;
+                                if ("Rejected".equalsIgnoreCase(b.getStatus())) continue;
+                                if (b.isPast()) continue;
+
+                                long bStart = dateFormat
+                                        .parse(b.getDate() + " " + b.getStartTime())
+                                        .getTime();
+                                long bEnd = dateFormat
+                                        .parse(b.getDate() + " " + b.getEndTime())
+                                        .getTime();
+
+                                boolean overlap = newStart < bEnd && newEnd > bStart;
+                                if (overlap) {
+                                    cb.onResult(true);
+                                    return;
+                                }
+                            }
+
+                            cb.onResult(false);
+                        } catch (Exception e) {
+                            cb.onResult(false);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        cb.onResult(false);
+                    }
+                });
+    }
+
+    private void createBooking(Slot slot) {
+        String code = slot.getCourseCode();
+        if (code == null || code.trim().isEmpty()) {
+            code = etCourseSearch.getText().toString().trim().toUpperCase(Locale.getDefault());
+        }
+
+        String status = slot.isRequiresApproval() ? "Pending" : "Approved";
+
+        StudentBooking booking = new StudentBooking(
+                null,
+                null,
+                studentId,
+                slot.getTutorId(),
+                slot.getTutorId(),
+                code,
+                slot.getDate(),
+                slot.getStartTime(),
+                slot.getEndTime(),
+                status,
+                slot.getSlotId()
+        );
+
+        repository.addStudentBooking(booking);
+        repository.updateSlotBooking(slot.getSlotId(), true, booking.getBookingId());
+
+        Toast.makeText(this,
+                "Booking has been created (" + status + ").",
+                Toast.LENGTH_SHORT).show();
+
+        slots.remove(slot);
+        slotAdapter.notifyDataSetChanged();
+    }
+
+    private interface ConflictCallback {
+        void onResult(boolean hasConflict);
+    }
 }
+

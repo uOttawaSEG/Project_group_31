@@ -11,6 +11,8 @@ public class Slot {
     private String date;
     private String startTime;
     private String endTime;
+
+    private String courseCode;
     private boolean requiresApproval;
     private boolean isAvailable;
 
@@ -49,6 +51,8 @@ public class Slot {
         return tutorId;
     }
 
+    public String getCourseCode() { return courseCode;}
+
     public void setTutorId(String tutorId) {
         this.tutorId = tutorId;
 
@@ -61,6 +65,9 @@ public class Slot {
     public void setDate(String date) {
         this.date = date;
 
+    }
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
     }
 
     public String getStartTime() {

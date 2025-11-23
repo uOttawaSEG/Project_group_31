@@ -207,6 +207,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                                 newSlot.setRequiresApproval(false);
                                 newSlot.setIsAvailable(true);
                                 newSlot.setIsBooked(false);
+                                newSlot.setCourseCode(selectedCourseCode);
 
                                 repository.addSlot(newSlot, task -> {
                                     if (task.isSuccessful()) {
