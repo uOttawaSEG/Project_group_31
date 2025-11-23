@@ -8,11 +8,15 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+
 public class TutorTest {
 
     @Test
     public void calculateAverageRating_usesAllRatingsCorrectly() {
         Tutor tutor = new Tutor();
+
+        tutor.setRatings(new ArrayList<Rating>());
 
 
         tutor.addRating(new Rating("rating1", "tutor1", "student1", "session1", 5, "great", System.currentTimeMillis()));
