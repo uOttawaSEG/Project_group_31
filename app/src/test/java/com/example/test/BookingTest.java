@@ -12,6 +12,7 @@ public class BookingTest {
         return hours >= 24;
     }
 
+    @Test
     public void testCancel() {
 
         long now = 0L;
