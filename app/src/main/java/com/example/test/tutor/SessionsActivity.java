@@ -161,13 +161,67 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
 
     @Override
     public void onSessionCancel(Session session) {
+        if (session == null) {
+            Toast.makeText(this, "Invalid session", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String slotId = session.getSlotId();
+        String studentId = session.getStudentId();
+
+        // Step 1: cancel session
         FirebaseDatabase.getInstance().getReference("sessions")
                 .child(session.getSessionId())
                 .child("status")
-                .setValue("CANCELED")
-                .addOnSuccessListener(a ->
-                        Toast.makeText(this, "Session canceled", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .setValue("CANCELED");
+
+        // Step 2: find related booking
+        FirebaseDatabase.getInstance().getReference("bookings")
+                .orderByChild("slotId")
+                .equalTo(slotId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        for (DataSnapshot child : snapshot.getChildren()) {
+
+                            String bStudentId = child.child("studentId").getValue(String.class);
+                            if (bStudentId != null && bStudentId.equals(studentId)) {
+
+                                String bookingId = child.getKey();
+
+                                // Step 3: cancel booking
+                                child.getRef().child("status").setValue("Cancelled");
+
+                                // Step 4: free the slot
+                                FirebaseDatabase.getInstance()
+                                        .getReference("slots")
+                                        .child(slotId)
+                                        .child("isBooked")
+                                        .setValue(false);
+
+                                FirebaseDatabase.getInstance()
+                                        .getReference("slots")
+                                        .child(slotId)
+                                        .child("bookingId")
+                                        .setValue(null);
+
+                                Toast.makeText(SessionsActivity.this,
+                                        "Session cancelled and slot freed",
+                                        Toast.LENGTH_SHORT).show();
+
+                                return;
+                            }
+                        }
+
+                        Toast.makeText(SessionsActivity.this,
+                                "Booking not found", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
     }
+
+
 }

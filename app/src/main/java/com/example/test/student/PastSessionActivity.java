@@ -22,6 +22,7 @@ import com.example.test.sharedfiles.model.StudentBooking;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
@@ -48,6 +49,35 @@ public class PastSessionActivity extends AppCompatActivity implements PastSessio
 
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+    private void fetchTutorInfo(String tutorId, TutorInfoCallback callback) {
+        FirebaseDatabase.getInstance().getReference("tutors")
+                .child(tutorId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        String first = snapshot.child("firstName").getValue(String.class);
+                        String last = snapshot.child("lastName").getValue(String.class);
+                        Double rating = snapshot.child("averageRating").getValue(Double.class);
+
+                        if (first == null) first = "";
+                        if (last == null) last = "";
+                        if (rating == null) rating = 0.0;
+
+                        callback.onResult(first + " " + last, rating);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onResult("Unknown Tutor", 0.0);
+                    }
+                });
+    }
+
+    private interface TutorInfoCallback {
+        void onResult(String tutorName, double rating);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,28 +115,58 @@ public class PastSessionActivity extends AppCompatActivity implements PastSessio
                         pastSessions.clear();
 
                         for (DataSnapshot child : snapshot.getChildren()) {
+
                             StudentBooking booking = child.getValue(StudentBooking.class);
-                            if (booking == null) {
-                                continue;
-                            }
+                            if (booking == null) continue;
 
-                            if (!booking.isPast()) {
-                                continue;
-                            }
+                            if (!booking.isPast()) continue;
 
-                            if (!"Approved".equalsIgnoreCase(booking.getStatus())) {
-                                continue;
-                            }
+                            if (!"Approved".equalsIgnoreCase(booking.getStatus())) continue;
 
-                            if (booking.getBookingId() == null) {
+                            if (booking.getBookingId() == null)
                                 booking.setBookingId(child.getKey());
-                            }
 
-                            pastSessions.add(booking);
+                            String tutorId = booking.getTutorId();
+
+                            fetchTutorInfo(tutorId, (name, rating) -> {
+                                booking.setTutorName(name);
+                                booking.setTutorRating(rating);
+
+                                DatabaseReference ratingsRef = FirebaseDatabase.getInstance()
+                                        .getReference("ratings")
+                                        .child(tutorId);
+
+                                ratingsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                                        boolean alreadyRated = false;
+
+                                        for (DataSnapshot rateSnap : snapshot.getChildren()) {
+                                            String ratedBookingId = rateSnap.child("bookingId").getValue(String.class);
+                                            String ratedStudentId = rateSnap.child("studentId").getValue(String.class);
+
+                                            if (ratedBookingId != null && ratedStudentId != null &&
+                                                    ratedBookingId.equals(booking.getBookingId()) &&
+                                                    ratedStudentId.equals(booking.getStudentId())) {
+                                                alreadyRated = true;
+                                                break;
+                                            }
+                                        }
+
+                                        booking.setAlreadyRated(alreadyRated);
+
+                                        pastSessions.add(booking);
+
+                                        sortByDateDescending(pastSessions);
+                                        pastSessionAdapter.notifyDataSetChanged();
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) { }
+                                });
+                            });
                         }
-
-                        sortByDateDescending(pastSessions);
-                        pastSessionAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -117,6 +177,7 @@ public class PastSessionActivity extends AppCompatActivity implements PastSessio
                     }
                 });
     }
+
 
     private void sortByDateDescending(List<StudentBooking> list) {
         Collections.sort(list, new Comparator<StudentBooking>() {
@@ -189,10 +250,72 @@ public class PastSessionActivity extends AppCompatActivity implements PastSessio
         data.put("timestamp", System.currentTimeMillis());
 
         ref.child(ratingId).setValue(data)
-                .addOnSuccessListener(aVoid ->
-                        Toast.makeText(this, "Rating has been submitted successfully", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Rating has been submitted successfully", Toast.LENGTH_SHORT).show();
+                    updateTutorAverageRating(booking.getTutorId());
+                })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Could not submit rating. Please try again", Toast.LENGTH_SHORT).show());
+                        Toast.makeText(this, "Could not submit rating. Please try again", Toast.LENGTH_SHORT).show()
+                );
     }
+
+    private void updateTutorAverageRating(String tutorId) {
+
+        DatabaseReference ratingsRef = FirebaseDatabase.getInstance()
+                .getReference("ratings")
+                .child(tutorId);
+
+        ratingsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                double total = 0;
+                int count = 0;
+
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    Integer stars = snap.child("stars").getValue(Integer.class);
+                    if (stars != null) {
+                        total += stars;
+                        count++;
+                    }
+                }
+
+                double avg = (count == 0) ? 0 : total / count;
+
+                FirebaseDatabase.getInstance()
+                        .getReference("tutors")
+                        .child(tutorId)
+                        .child("averageRating")
+                        .setValue(avg);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+    private void checkIfAlreadyRated(StudentBooking booking, Runnable onNotRated, Runnable onRated) {
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("ratings")
+                .child(booking.getTutorId());
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    String bId = child.child("bookingId").getValue(String.class);
+                    if (bId != null && bId.equals(booking.getBookingId())) {
+                        onRated.run();
+                        return;
+                    }
+                }
+                onNotRated.run();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
 }
 

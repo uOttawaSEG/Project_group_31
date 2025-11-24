@@ -41,10 +41,16 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
         final StudentBooking booking = bookingList.get(position);
 
         holder.tvCourse.setText("Course: " + booking.getCourseCode());
-        holder.tvTutor.setText("Tutor: " + booking.getTutorName());
-        holder.tvStatus.setText("Status: " + booking.getStatus());
 
-        holder.tvTime.setText(dateTimeFormat.format(new Date(booking.getStartTime())));
+        String tutorText = booking.getTutorName() +
+                " (" + String.format("%.1f", booking.getTutorRating()) + "⭐)";
+        holder.tvTutor.setText("Tutor: " + tutorText);
+
+        String fullTime = booking.getDate() + "  " +
+                booking.getStartTime() + " - " + booking.getEndTime();
+
+        holder.tvTime.setText(fullTime);
+        holder.tvStatus.setText("Status: " + booking.getStatus());
 
         if ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus())) {
             holder.btnCancel.setVisibility(View.GONE);

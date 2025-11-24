@@ -37,11 +37,14 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
     private TutorSlotAdapter adapter;
     private FirebaseRepository repository;
     private FirebaseAuth mAuth;
+
+    private String selectedCourseCode;
     private String currentTutorId;
     private Button btnReturnToDashboard;
     private RecyclerView rvSlots;
     private Button btnAddSlot;
     private Switch switchAutoApproval;
+
     private final List<Slot> mySlots = new ArrayList<>();
     private final Map<Slot, String> slotKeyMap = new HashMap<>();
 
@@ -59,6 +62,8 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
             finish();
             return;
         }
+
+        loadTutorCourseCode();
 
         rvSlots = findViewById(R.id.rvViewSlotsList);
         rvSlots.setLayoutManager(new LinearLayoutManager(this));
@@ -135,6 +140,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                 },
                 2025, 0, 1
         );
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
 
         datePickerDialog.setTitle("Select Date");
         datePickerDialog.show();
@@ -205,7 +211,7 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                                 newSlot.setStartTime(startTime);
                                 newSlot.setEndTime(endTime);
                                 newSlot.setRequiresApproval(false);
-                                newSlot.setIsAvailable(true);
+                                newSlot.setAvailable(true);
                                 newSlot.setIsBooked(false);
                                 newSlot.setCourseCode(selectedCourseCode);
 
@@ -258,6 +264,21 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                         "Failed to load slots", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadTutorCourseCode() {
+        FirebaseDatabase.getInstance()
+                .getReference("tutors")
+                .child(currentTutorId)
+                .child("coursesOffered")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        selectedCourseCode = snapshot.getValue(String.class);
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to load course code", Toast.LENGTH_SHORT).show());
     }
 
     @Override

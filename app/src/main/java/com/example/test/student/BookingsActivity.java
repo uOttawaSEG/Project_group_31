@@ -15,7 +15,10 @@ import com.example.test.sharedfiles.adapters.BookingAdapter;
 import com.example.test.sharedfiles.model.StudentBooking;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.example.test.sharedfiles.model.Session;
+
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,42 +78,85 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
         );
 
         loadBookings();
+        loadRequestedSlotRequests();
+    }
+    private void fetchTutorInfo(String tutorId, TutorInfoCallback callback) {
+        FirebaseDatabase.getInstance().getReference("tutors")
+                .child(tutorId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        if (!snapshot.exists()) {
+                            callback.onResult("Unknown Tutor", 0.0);
+                            return;
+                        }
+
+                        String first = snapshot.child("firstName").getValue(String.class);
+                        String last = snapshot.child("lastName").getValue(String.class);
+                        Double rating = snapshot.child("averageRating").getValue(Double.class);
+
+                        if (first == null) first = "";
+                        if (last == null) last = "";
+                        if (rating == null) rating = 0.0;
+
+                        callback.onResult(first + " " + last, rating);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onResult("Unknown Tutor", 0.0);
+                    }
+                });
     }
 
+    private interface TutorInfoCallback {
+        void onResult(String tutorName, double rating);
+    }
     private void loadBookings() {
         repository.getBookingsByStudent(studentId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                         upcomingBookings.clear();
                         requestedBookings.clear();
 
                         for (DataSnapshot child : snapshot.getChildren()) {
+
                             StudentBooking booking = child.getValue(StudentBooking.class);
-                            if (booking == null) {
-                                continue;
-                            }
+                            if (booking == null) continue;
 
-                            if (booking.getBookingId() == null) {
+                            if (booking.getBookingId() == null)
                                 booking.setBookingId(child.getKey());
-                            }
 
-                            if (booking.isPast()) {
+                            if (booking.getDate() == null ||
+                                    booking.getStartTime() == null ||
+                                    booking.getEndTime() == null)
                                 continue;
-                            }
+                            if ("Cancelled".equalsIgnoreCase(booking.getStatus()))
+                                continue;
+                            if (booking.isPast()) continue;
 
-                            if ("Pending".equalsIgnoreCase(booking.getStatus())) {
-                                requestedBookings.add(booking);
-                            } else {
-                                upcomingBookings.add(booking);
-                            }
+                            String tutorId = booking.getTutorId();
+
+                            fetchTutorInfo(tutorId, (name, rating) -> {
+                                booking.setTutorName(name);
+                                booking.setTutorRating(rating);
+
+                                if ("Pending".equalsIgnoreCase(booking.getStatus())) {
+                                    requestedBookings.add(booking);
+                                } else {
+                                    upcomingBookings.add(booking);
+                                }
+
+                                sortByDateDescending(upcomingBookings);
+                                sortByDateDescending(requestedBookings);
+
+                                upcomingAdapter.notifyDataSetChanged();
+                                requestedAdapter.notifyDataSetChanged();
+                            });
                         }
-
-                        sortByDateDescending(upcomingBookings);
-                        sortByDateDescending(requestedBookings);
-
-                        upcomingAdapter.notifyDataSetChanged();
-                        requestedAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -121,13 +167,67 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
                 });
     }
 
+    private void loadRequestedSlotRequests() {
+
+        repository.getStudentSlotRequestsByStudent(studentId)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        requestedBookings.clear();
+
+                        for (DataSnapshot child : snapshot.getChildren()) {
+
+                            Session session = child.getValue(Session.class);
+                            if (session == null) continue;
+
+                            StudentBooking booking = new StudentBooking(
+                                    null,
+                                    session.getSessionId(),
+                                    session.getStudentId(),
+                                    session.getTutorId(),
+                                    "",
+                                    session.getCourseCode(),
+                                    session.getDate(),
+                                    session.getStartTime(),
+                                    session.getEndTime(),
+                                    session.getStatus(),
+                                    session.getSlotId()
+                            );
+
+                            String tutorId = booking.getTutorId();
+                            fetchTutorInfo(tutorId, (name, rating) -> {
+                                booking.setTutorName(name);
+                                booking.setTutorRating(rating);
+
+                                requestedBookings.add(booking);
+
+                                sortByDateDescending(requestedBookings);
+                                requestedAdapter.notifyDataSetChanged();
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(BookingsActivity.this,
+                                "Failed to load requested sessions", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
     private void sortByDateDescending(List<StudentBooking> list) {
         Collections.sort(list, new Comparator<StudentBooking>() {
             @Override
             public int compare(StudentBooking b1, StudentBooking b2) {
                 try {
+                    if (b1.getDate() == null || b1.getStartTime() == null) return 1;
+                    if (b2.getDate() == null || b2.getStartTime() == null) return -1;
+
                     long t1 = dateFormat.parse(b1.getDate() + " " + b1.getStartTime()).getTime();
                     long t2 = dateFormat.parse(b2.getDate() + " " + b2.getStartTime()).getTime();
+
                     return Long.compare(t2, t1);
                 } catch (Exception e) {
                     return 0;
@@ -138,6 +238,7 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
 
     @Override
     public void onCancelClick(StudentBooking booking) {
+
         if (!booking.canCancel()) {
             Toast.makeText(this,
                     "Can't cancel with less than 24 hours before the session starts",
@@ -145,13 +246,14 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
             return;
         }
 
-        if (booking.getBookingId() == null || booking.getSlotId() == null) {
-            Toast.makeText(this,
-                    "Missing booking id", Toast.LENGTH_SHORT).show();
-            return;
+        repository.cancelBooking(booking.getBookingId(), booking.getSlotId());
+        int index = upcomingBookings.indexOf(booking);
+        if (index != -1) {
+            upcomingBookings.remove(index);
+            upcomingAdapter.notifyItemRemoved(index);
         }
 
-        repository.cancelBooking(booking.getBookingId(), booking.getSlotId());
-        Toast.makeText(this, "Booking is cancelled", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Booking cancelled", Toast.LENGTH_SHORT).show();
     }
+
 }

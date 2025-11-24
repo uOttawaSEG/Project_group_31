@@ -16,55 +16,29 @@
         android:theme="@style/Theme.Test"
         tools:targetApi="31">
 
-        <activity
-            android:name=".admin.AdminInboxActivity"
-            android:exported="false" />
+        <activity android:name=".admin.AdminInboxActivity" android:exported="false" />
 
-        <activity
-            android:name=".student.RegisterStudentActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".tutor.RegisterTutorActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".sharedUserInterface.WelcomeActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".sharedUserInterface.LoginActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".tutor.TutorDashboardActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".tutor.SessionsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".tutor.ManageSlotsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".tutor.PendingRequestsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".student.CreateSlotRequestActivity" />
-
-        <activity android:name=".student.StudentDashboardActivity" />
-
-        <activity
-            android:name=".sharedUserInterface.MainActivity"
-            android:exported="true">
+        <activity android:name=".sharedUserInterface.WelcomeActivity" android:exported="false" />
+        <activity android:name=".sharedUserInterface.LoginActivity" android:exported="false" />
+        <activity android:name=".sharedUserInterface.MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".student.RegisterStudentActivity" android:exported="false" />
+        <activity android:name=".student.StudentDashboardActivity" android:exported="false" />
+        <activity android:name=".student.BrowseSessionsActivity" android:exported="false" />
+        <activity android:name=".student.BookingsActivity" android:exported="false" />
+        <activity android:name=".student.PastSessionActivity" android:exported="false" />
+        <activity android:name=".student.CreateSlotRequestActivity" android:exported="false" />
+
+        <activity android:name=".tutor.RegisterTutorActivity" android:exported="false" />
+        <activity android:name=".tutor.TutorDashboardActivity" android:exported="false" />
+        <activity android:name=".tutor.SessionsActivity" android:exported="false" />
+        <activity android:name=".tutor.ManageSlotsActivity" android:exported="false" />
+        <activity android:name=".tutor.PendingRequestsActivity" android:exported="false" />
 
     </application>
 </manifest>

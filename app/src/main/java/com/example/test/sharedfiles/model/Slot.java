@@ -11,13 +11,15 @@ public class Slot {
     private String date;
     private String startTime;
     private String endTime;
-
+    private boolean available;
     private String courseCode;
     private boolean requiresApproval;
-    private boolean isAvailable;
-
     private boolean isBooked;     // check if student has booked this slot
     private String bookingId;
+
+    private String tutorName;
+    private double tutorRating;
+
 
     public Slot() {
         // Firebase need this empty constructor
@@ -32,7 +34,7 @@ public class Slot {
         this.endTime = endTime;
 
         this.requiresApproval = requiresApproval;
-        this.isAvailable = isAvailable;
+        this.available = isAvailable;
 
         this.isBooked = false;   // we set its default to be false because it's not booked yet
         this.bookingId = null;   //  we set its default to be null because the slot is not booked yet
@@ -98,13 +100,14 @@ public class Slot {
     }
 
     public boolean isAvailable() {
-        return isAvailable;
+        return available;
     }
 
-    public void setIsAvailable(boolean isAvailable) {
-        this.isAvailable = isAvailable;
 
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
+
 
     public void setIsBooked(boolean b) {
         isBooked = b;
@@ -125,6 +128,23 @@ public class Slot {
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
     }
+
+    public String getTutorName() {
+        return tutorName;
+    }
+
+    public void setTutorName(String tutorName) {
+        this.tutorName = tutorName;
+    }
+
+    public double getTutorRating() {
+        return tutorRating;
+    }
+
+    public void setTutorRating(double tutorRating) {
+        this.tutorRating = tutorRating;
+    }
+
 
 
     //checks if the slot is from the past

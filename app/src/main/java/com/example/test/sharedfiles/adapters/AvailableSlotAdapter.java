@@ -9,10 +9,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.test.R;
 import com.example.test.sharedfiles.model.Slot;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 
 public class AvailableSlotAdapter extends RecyclerView.Adapter<AvailableSlotAdapter.ViewHolder> {
 
@@ -22,7 +22,6 @@ public class AvailableSlotAdapter extends RecyclerView.Adapter<AvailableSlotAdap
 
     private List<Slot> slotList;
     private OnBookClickListener listener;
-    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
     public AvailableSlotAdapter(List<Slot> slotList, OnBookClickListener listener) {
         this.slotList = slotList;
@@ -39,22 +38,35 @@ public class AvailableSlotAdapter extends RecyclerView.Adapter<AvailableSlotAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final Slot slot = slotList.get(position);
+        DatabaseReference tutorRef = FirebaseDatabase.getInstance()
+                .getReference("tutors")
+                .child(slot.getTutorId());
 
+        tutorRef.get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists()) {
+                String first = snapshot.child("firstName").getValue(String.class);
+                String last  = snapshot.child("lastName").getValue(String.class);
+                Double rating = snapshot.child("averageRating").getValue(Double.class);
+                if (first == null) first = "";
+                if (last == null)  last = "";
+                if (rating == null) rating = 0.0;
 
-        holder.tvTutorName.setText("Tutor: " + slot.getTutorId());
+                holder.tvTutorName.setText(
+                        "Tutor: " + first + " " + last + " (" + rating + "⭐)"
+                );
 
-        String timeInfo = dateTimeFormat.format(new Date(slot.getStartTime())) + " - " + dateTimeFormat.format(new Date(slot.getEndTime()));
-        holder.tvDateTime.setText(timeInfo);
-
-        holder.btnBook.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onBookClick(slot);
+            } else {
+                holder.tvTutorName.setText("Tutor: Unknown (0.0⭐)");
             }
         });
+
+        String timeInfo = slot.getDate() + "  " + slot.getStartTime() + " - " + slot.getEndTime();
+        holder.tvDateTime.setText(timeInfo);
+
+        holder.btnBook.setOnClickListener(v -> listener.onBookClick(slot));
     }
 
-    @Override
+        @Override
     public int getItemCount() {
         return slotList.size();
     }

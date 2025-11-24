@@ -1,24 +1,41 @@
 package com.example.test.data;
 
-import java.util.Map;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.example.test.sharedfiles.model.RegistrationRequest;
 import com.example.test.sharedfiles.model.Session;
 import com.example.test.sharedfiles.model.Slot;
+import com.example.test.sharedfiles.model.StudentBooking;
 import com.example.test.student.Student;
 import com.example.test.tutor.Tutor;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
-import com.example.test.sharedfiles.model.StudentBooking;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Map;
 
 
 public class FirebaseRepository {
+
+    private static final String PATH_REG_REQUESTS        = "registrationRequests";
+    private static final String PATH_TUTORS              = "tutors";
+    private static final String PATH_STUDENTS            = "students";
+    private static final String PATH_SLOTS               = "slots";
+    private static final String PATH_SESSIONS            = "sessions";
+    private static final String PATH_BOOKINGS            = "bookings";
+
+    private static final String PATH_STUDENT_SLOT_REQ    = "StudentSlotRequests";
+
+    private static final String TAG = "FirebaseRepository";
 
     private final FirebaseAuth auth;
     private final DatabaseReference db;
@@ -95,6 +112,29 @@ public class FirebaseRepository {
         return db.child("slots").orderByChild("tutorId").equalTo(tutorId);
     }
 
+    // we mark the slot of the tutor is already booked or not based on its current status
+    public void updateSlotBooking(String slotId, boolean isBooked, String bookingId) {
+
+        // Update slot booking state
+        db.child("slots")
+                .child(slotId)
+                .child("isBooked")
+                .setValue(isBooked);
+
+        // Update or clear booking id
+        if (isBooked) {
+            db.child("slots")
+                    .child(slotId)
+                    .child("bookingId")
+                    .setValue(bookingId);
+        } else {
+            db.child("slots")
+                    .child(slotId)
+                    .child("bookingId")
+                    .setValue(null);
+        }
+    }
+
 
     public void addSession(Session session, OnCompleteListener<Void> listener) {
         String id = db.child("sessions").push().getKey();
@@ -109,6 +149,7 @@ public class FirebaseRepository {
                 .child("status").setValue(status)
                 .addOnCompleteListener(listener);
     }
+
 
     public Query getSessionsByTutor(String tutorId) {
         return db.child("sessions")
@@ -166,6 +207,13 @@ public class FirebaseRepository {
                 .orderByChild("tutorId").equalTo(tutorId);
     }
 
+    public Query getStudentSlotRequestsByStudent(String studentId) {
+        return db.child("StudentSlotRequests")
+                .orderByChild("studentId")
+                .equalTo(studentId);
+    }
+
+
     // this go to the bookings section in database and then create each booking with an unique ID
     public void addStudentBooking(StudentBooking booking) {
         String id = db.child("bookings").push().getKey();
@@ -186,33 +234,108 @@ public class FirebaseRepository {
                 .child("status")
                 .setValue("Cancelled");
         updateSlotBooking(slotId, false, null);
+        checkAndCancelSessionIfNoBookings(slotId);
+
     }
-    // we mark the slot of the tutor is already booked or not based on its current status
-    public void updateSlotBooking(String slotId, boolean isBooked, String bookingId) {
-
-        // Update slot booking state
-        db.child("slots")
-                .child(slotId)
-                .child("isBooked")
-                .setValue(isBooked);
-
-        // Update or clear booking id
-        if (isBooked) {
-            db.child("slots")
-                    .child(slotId)
-                    .child("bookingId")
-                    .setValue(bookingId);
-        } else {
-            db.child("slots")
-                    .child(slotId)
-                    .child("bookingId")
-                    .setValue(null);
-        }
-    }
-
-
-
     public DatabaseReference getDatabaseReference(String path) {
         return db.child(path);
+    }
+    // this help tutor cancel the session and then cancel the slot
+    public void tutorCancelBooking(String bookingId, String slotId) {
+        db.child("bookings")
+                .child(bookingId)
+                .child("status")
+                .setValue("Cancelled");
+        updateSlotBooking(slotId, false, null);
+        checkAndCancelSessionIfNoBookings(slotId);
+
+    }
+    public void updateTutorAverageRating(String tutorId) {
+        DatabaseReference ratingsRef = db.child("ratings").child(tutorId);
+
+        ratingsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                double total = 0;
+                int count = 0;
+
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    Integer stars = child.child("stars").getValue(Integer.class);
+                    if (stars != null) {
+                        total += stars;
+                        count++;
+                    }
+                }
+
+                if (count == 0) return;
+
+                double avg = total / count;
+
+                db.child("tutors")
+                        .child(tutorId)
+                        .child("averageRating")
+                        .setValue(avg);
+
+                db.child("tutors")
+                        .child(tutorId)
+                        .child("ratingsCount")
+                        .setValue(count);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { }
+        });
+    }
+    // this will cancel the session if every student cancel their booking
+    private void checkAndCancelSessionIfNoBookings(String slotId) {
+
+        db.child("bookings")
+                .orderByChild("slotId")
+                .equalTo(slotId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        boolean hasActiveBooking = false;
+
+                        for (DataSnapshot b : snapshot.getChildren()) {
+                            String status = b.child("status").getValue(String.class);
+
+                            if (status != null &&
+                                    !status.equalsIgnoreCase("Cancelled") &&
+                                    !status.equalsIgnoreCase("Rejected")) {
+
+                                hasActiveBooking = true;
+                                break;
+                            }
+                        }
+
+                        if (!hasActiveBooking) {
+                            cancelSession(slotId);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) { }
+                });
+    }
+
+    private void cancelSession(String slotId) {
+
+        db.child("sessions")
+                .orderByChild("slotId")
+                .equalTo(slotId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            s.getRef().child("status").setValue("CANCELED");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) { }
+                });
     }
 }

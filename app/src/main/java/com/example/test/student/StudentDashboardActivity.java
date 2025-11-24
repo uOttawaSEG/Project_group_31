@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.test.R;
 import com.google.firebase.auth.FirebaseAuth;
 
-public class StudentDashboardActivity extends AppCompatActiviy{
+public class StudentDashboardActivity extends AppCompatActivity{
     private Button btnBrowseSessions;
     private Button btnMyBookings;
     private Button btnPastSessions;

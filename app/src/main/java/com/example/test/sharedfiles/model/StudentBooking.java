@@ -13,6 +13,8 @@ public class StudentBooking {
     private String date;
     private String startTime;
     private String endTime;
+    private boolean alreadyRated = false;
+    private double tutorRating;
 
     private String status;     // it can be "Pending", "Approved", "Rejected", "Cancelled"
     private String slotId;   // the slot ID that linked to the booking
@@ -35,10 +37,9 @@ public class StudentBooking {
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
-
         this.status = status;
-
         this.slotId = slotId;
+        this.tutorRating = 0.0;
     }
 
 
@@ -59,6 +60,8 @@ public class StudentBooking {
     public String getTutorName() { return tutorName; }
     public void setTutorName(String tutorName) { this.tutorName = tutorName; }
 
+    public double getTutorRating() { return tutorRating; }
+    public void setTutorRating(double tutorRating) { this.tutorRating = tutorRating; }
     public String getCourseCode() { return courseCode; }
     public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
 
@@ -73,6 +76,9 @@ public class StudentBooking {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public boolean isAlreadyRated() { return alreadyRated; }
+    public void setAlreadyRated(boolean value) { alreadyRated = value; }
 
     public String getSlotId() {
         return slotId;
@@ -92,7 +98,9 @@ public class StudentBooking {
 
     // this method determine if the student is allowed to cancel their booked session or not
     public boolean canCancel() {
-        if (status == null) return false;
+        if (status == null || date == null || startTime == null) {
+            return false;
+        }
 
         if (status.equals("Pending")) return true;
         if (status.equals("Approved")) return moreThan24HoursBefore();

@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.test.R;
 import com.example.test.sharedfiles.model.StudentBooking;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +23,12 @@ public class PastSessionAdapter extends RecyclerView.Adapter<PastSessionAdapter.
 
     private List<StudentBooking> sessionList;
     private OnRateClickListener listener;
-    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+    private final SimpleDateFormat dateTimeParser =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+    private final SimpleDateFormat outputFormat =
+            new SimpleDateFormat("yyyy-MM-dd  HH:mm", Locale.getDefault());
 
     public PastSessionAdapter(List<StudentBooking> sessionList, OnRateClickListener listener) {
         this.sessionList = sessionList;
@@ -32,7 +38,8 @@ public class PastSessionAdapter extends RecyclerView.Adapter<PastSessionAdapter.
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_past_session, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_past_session, parent, false);
         return new ViewHolder(view);
     }
 
@@ -40,17 +47,27 @@ public class PastSessionAdapter extends RecyclerView.Adapter<PastSessionAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final StudentBooking booking = sessionList.get(position);
 
-        holder.tvCourse.setText(booking.getCourseCode());
-        holder.tvTutor.setText("Tutor: " + booking.getTutorName());
-        holder.tvTime.setText(dateTimeFormat.format(new Date(booking.getStartTime())));
+        holder.tvCourse.setText("Course: " + booking.getCourseCode());
 
-        holder.btnRate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onRateClick(booking);
-            }
-        });
+        String tutorInfo = "Tutor: " + booking.getTutorName() +
+                " (" + String.format(Locale.getDefault(), "%.1f", booking.getTutorRating()) + "⭐)";
+        holder.tvTutor.setText(tutorInfo);
+
+        try {
+            Date date = dateTimeParser.parse(
+                    booking.getDate() + " " + booking.getStartTime()
+            );
+            holder.tvTime.setText(outputFormat.format(date));
+        } catch (Exception e) {
+            holder.tvTime.setText(booking.getDate() + " " + booking.getStartTime());
+        }
+        boolean alreadyRated = booking.isAlreadyRated();
+        holder.btnRate.setEnabled(!alreadyRated);
+        holder.btnRate.setAlpha(alreadyRated ? 0.4f : 1f);
+
+        holder.btnRate.setOnClickListener(v -> listener.onRateClick(booking));
     }
+
 
     @Override
     public int getItemCount() {
