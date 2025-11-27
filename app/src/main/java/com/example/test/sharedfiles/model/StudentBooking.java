@@ -18,6 +18,7 @@ public class StudentBooking {
 
     private String status;     // it can be "Pending", "Approved", "Rejected", "Cancelled"
     private String slotId;   // the slot ID that linked to the booking
+    private String cancellationMessage;
 
     public StudentBooking() {
         // Firebase need this empty constructor
@@ -79,6 +80,8 @@ public class StudentBooking {
 
     public boolean isAlreadyRated() { return alreadyRated; }
     public void setAlreadyRated(boolean value) { alreadyRated = value; }
+
+
 
     public String getSlotId() {
         return slotId;

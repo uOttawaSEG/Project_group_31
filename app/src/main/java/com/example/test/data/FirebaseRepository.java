@@ -338,4 +338,14 @@ public class FirebaseRepository {
                     public void onCancelled(@NonNull DatabaseError error) { }
                 });
     }
+    public void notifyStudentTutorCancelled(String studentId, String bookingId) {
+        FirebaseDatabase.getInstance()
+                .getReference("cancel_notifications")
+                .child(studentId)
+                .child(bookingId)
+                .setValue(true);
+        notifyStudentTutorCancelled(studentId, bookingId);
+
+    }
+
 }

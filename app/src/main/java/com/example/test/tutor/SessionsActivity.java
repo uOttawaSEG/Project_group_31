@@ -169,13 +169,11 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
         String slotId = session.getSlotId();
         String studentId = session.getStudentId();
 
-        // Step 1: cancel session
         FirebaseDatabase.getInstance().getReference("sessions")
                 .child(session.getSessionId())
                 .child("status")
                 .setValue("CANCELED");
 
-        // Step 2: find related booking
         FirebaseDatabase.getInstance().getReference("bookings")
                 .orderByChild("slotId")
                 .equalTo(slotId)
@@ -190,10 +188,8 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
 
                                 String bookingId = child.getKey();
 
-                                // Step 3: cancel booking
                                 child.getRef().child("status").setValue("Cancelled");
 
-                                // Step 4: free the slot
                                 FirebaseDatabase.getInstance()
                                         .getReference("slots")
                                         .child(slotId)
@@ -206,11 +202,19 @@ public class SessionsActivity extends AppCompatActivity implements SessionAdapte
                                         .child("bookingId")
                                         .setValue(null);
 
+                                FirebaseDatabase.getInstance()
+                                        .getReference("notifications")
+                                        .child(studentId)
+                                        .child(bookingId)
+                                        .setValue("Tutor has cancelled this session.");
+
                                 Toast.makeText(SessionsActivity.this,
                                         "Session cancelled and slot freed",
                                         Toast.LENGTH_SHORT).show();
 
                                 return;
+
+
                             }
                         }
 

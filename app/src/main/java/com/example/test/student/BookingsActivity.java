@@ -114,6 +114,7 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
         void onResult(String tutorName, double rating);
     }
     private void loadBookings() {
+
         repository.getBookingsByStudent(studentId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -127,20 +128,27 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
                             StudentBooking booking = child.getValue(StudentBooking.class);
                             if (booking == null) continue;
 
-                            if (booking.getBookingId() == null)
+                            if (booking.getBookingId() == null) {
                                 booking.setBookingId(child.getKey());
+                            }
 
                             if (booking.getDate() == null ||
                                     booking.getStartTime() == null ||
-                                    booking.getEndTime() == null)
+                                    booking.getEndTime() == null) {
                                 continue;
-                            if ("Cancelled".equalsIgnoreCase(booking.getStatus()))
-                                continue;
+                            }
+
                             if (booking.isPast()) continue;
 
-                            String tutorId = booking.getTutorId();
+                            String status = booking.getStatus();
+                            if (status != null &&
+                                    (status.equalsIgnoreCase("Cancelled")
+                                            || status.equalsIgnoreCase("Canceled")
+                                            || status.equalsIgnoreCase("CANCELED"))) {
+                                continue;
+                            }
 
-                            fetchTutorInfo(tutorId, (name, rating) -> {
+                            fetchTutorInfo(booking.getTutorId(), (name, rating) -> {
                                 booking.setTutorName(name);
                                 booking.setTutorRating(rating);
 
@@ -162,10 +170,15 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Toast.makeText(BookingsActivity.this,
-                                "Failed to load bookings", Toast.LENGTH_SHORT).show();
+                                "Failed to load bookings",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
+
+
+
 
     private void loadRequestedSlotRequests() {
 

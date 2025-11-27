@@ -53,6 +53,14 @@
             android:layout_height="wrap_content"
             android:text="Cancel"
             android:backgroundTint="#D32F2F"/>
+
+        <Button
+            android:id="@+id/btnExport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Export to Calendar"
+            android:layout_marginStart="8dp" />
+
     </LinearLayout>
 
 </LinearLayout>

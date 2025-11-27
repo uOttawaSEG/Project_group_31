@@ -263,7 +263,7 @@ public class BrowseSessionsActivity extends AppCompatActivity {
                 null,
                 studentId,
                 slot.getTutorId(),
-                "",                     // tutor name will be fetched later
+                slot.getTutorName(),
                 code,
                 slot.getDate(),
                 slot.getStartTime(),
@@ -271,6 +271,8 @@ public class BrowseSessionsActivity extends AppCompatActivity {
                 status,
                 slot.getSlotId()
         );
+
+        booking.setTutorRating(slot.getTutorRating());
 
         repository.addStudentBooking(booking);
 
