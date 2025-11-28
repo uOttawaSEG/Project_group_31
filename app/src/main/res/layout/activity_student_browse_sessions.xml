@@ -56,4 +56,14 @@
         android:textAllCaps="false"
         android:padding="12dp" />
 
+    <Button
+        android:id="@+id/btnReturnToDashboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Return to Dashboard"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#D32F2F"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false" />
+
 </LinearLayout>

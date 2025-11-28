@@ -24,6 +24,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -273,12 +274,33 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
                 .child("coursesOffered")
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    if (snapshot.exists()) {
-                        selectedCourseCode = snapshot.getValue(String.class);
+
+                    if (!snapshot.exists()) {
+                        Toast.makeText(this, "No course found for tutor", Toast.LENGTH_SHORT).show();
+                        return;
                     }
+
+                    GenericTypeIndicator<List<String>> t =
+                            new GenericTypeIndicator<List<String>>() {};
+
+                    List<String> list = snapshot.getValue(t);
+
+                    if (list == null || list.isEmpty()) {
+                        Toast.makeText(this, "Tutor has no assigned courses", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    selectedCourseCode = list.get(0);
+
+                    Toast.makeText(this,
+                            "Loaded course's slot: " + selectedCourseCode,
+                            Toast.LENGTH_SHORT).show();
+
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to load course code", Toast.LENGTH_SHORT).show());
+                        Toast.makeText(this,
+                                "Failed to load course code: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
     }
 
     @Override

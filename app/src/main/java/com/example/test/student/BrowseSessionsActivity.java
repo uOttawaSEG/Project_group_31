@@ -38,6 +38,7 @@ public class BrowseSessionsActivity extends AppCompatActivity {
     private EditText etCourseSearch;
     private Button btnSearch;
     private Button btnCreateSlot;
+    private Button btnReturnToDashboard;
     private RecyclerView rvAvailableSlots;
 
     private FirebaseRepository repository;
@@ -102,6 +103,15 @@ public class BrowseSessionsActivity extends AppCompatActivity {
         btnSearch = findViewById(R.id.btnSearch);
         btnCreateSlot = findViewById(R.id.btnCreateSlot);
         rvAvailableSlots = findViewById(R.id.rvAvailableSlots);
+        btnReturnToDashboard = findViewById(R.id.btnReturnToDashboard);
+        btnReturnToDashboard.setOnClickListener(v -> {
+            Intent intent = new Intent(BrowseSessionsActivity.this, StudentDashboardActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
+
+
 
         rvAvailableSlots.setLayoutManager(new LinearLayoutManager(this));
         slotAdapter = new AvailableSlotAdapter(slots, this::onBookClicked);

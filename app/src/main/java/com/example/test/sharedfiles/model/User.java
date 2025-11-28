@@ -5,22 +5,25 @@ public class User {
     private String lastName;
     private String email;
     private String password;
+    private String userId;
     private String phoneNumber;
-
     protected String role;
+    private String status;
 
     public User(){
 
     }
     //Constructor to create student object with first name and last name
-    public User(String firstName, String lastName, String email, String password, String phoneNumber, String role) {
+    public User(String userId,String firstName, String lastName, String email, String password, String phoneNumber, String role) {
 
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
+        this.userId = userId;
         this.phoneNumber = phoneNumber;
         this.role = role;
+        this.status = status;
     }
     //Get the first name
     public String getFirstName() {
@@ -56,17 +59,24 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
-   @Override
-    public String toString(){
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    @Override
+    public String toString() {
         return "User{" +
-                "firstName='" + firstName + '\'' +
+                "userId='" + userId + '\'' +
+                ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
+                ", role='" + role + '\'' +
+                ", status='" + status + '\'' +
                 '}';
-
-
+    }
 
     }
-}
 

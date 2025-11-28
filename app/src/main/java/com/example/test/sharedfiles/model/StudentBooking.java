@@ -46,41 +46,101 @@ public class StudentBooking {
 
     // getter and setter methods which allow other class to read and update them
 
-    public String getBookingId() { return bookingId; }
-    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+    public String getBookingId() {
+        return bookingId;
+    }
 
-    public String getSessionId() { return sessionId; }
-    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+    public void setBookingId(String bookingId) {
+        this.bookingId = bookingId;
+    }
 
-    public String getStudentId() { return studentId; }
-    public void setStudentId(String studentId) { this.studentId = studentId; }
+    public String getSessionId() {
+        return sessionId;
+    }
 
-    public String getTutorId() { return tutorId; }
-    public void setTutorId(String tutorId) { this.tutorId = tutorId; }
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
 
-    public String getTutorName() { return tutorName; }
-    public void setTutorName(String tutorName) { this.tutorName = tutorName; }
+    public String getStudentId() {
+        return studentId;
+    }
 
-    public double getTutorRating() { return tutorRating; }
-    public void setTutorRating(double tutorRating) { this.tutorRating = tutorRating; }
-    public String getCourseCode() { return courseCode; }
-    public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
+    }
 
-    public String getDate() { return date; }
-    public void setDate(String date) { this.date = date; }
+    public String getTutorId() {
+        return tutorId;
+    }
 
-    public String getStartTime() { return startTime; }
-    public void setStartTime(String startTime) { this.startTime = startTime; }
+    public void setTutorId(String tutorId) {
+        this.tutorId = tutorId;
+    }
 
-    public String getEndTime() { return endTime; }
-    public void setEndTime(String endTime) { this.endTime = endTime; }
+    public String getTutorName() {
+        return tutorName;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setTutorName(String tutorName) {
+        this.tutorName = tutorName;
+    }
 
-    public boolean isAlreadyRated() { return alreadyRated; }
-    public void setAlreadyRated(boolean value) { alreadyRated = value; }
+    public double getTutorRating() {
+        return tutorRating;
+    }
 
+    public void setTutorRating(double tutorRating) {
+        this.tutorRating = tutorRating;
+    }
+
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isAlreadyRated() {
+        return alreadyRated;
+    }
+
+    public void setAlreadyRated(boolean value) {
+        alreadyRated = value;
+    }
 
 
     public String getSlotId() {
@@ -105,8 +165,11 @@ public class StudentBooking {
             return false;
         }
 
-        if (status.equals("Pending")) return true;
-        if (status.equals("Approved")) return moreThan24HoursBefore();
+        String s = status.trim().toUpperCase();
+
+        if (s.equals("PENDING")) return true;
+
+        if (s.equals("APPROVED")) return moreThan24HoursBefore();
 
         return false;
     }
@@ -120,13 +183,18 @@ public class StudentBooking {
             return false;
         }
     }
+
     // we check if it's more than 24 hours before the starting time of the session
     private boolean moreThan24HoursBefore() {
         try {
-            long sessionStart = toMillis(date, startTime);
-            long diff = sessionStart - System.currentTimeMillis();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            long sessionStart = sdf.parse(date + " " + startTime).getTime();
+            long now = System.currentTimeMillis();
 
-            return diff > (24L * 60L * 60L * 1000L); // this equation is 24 hours
+            long diff = sessionStart - now;
+
+            return diff >= 86_400_000L;
+
         } catch (Exception e) {
             return false;
         }

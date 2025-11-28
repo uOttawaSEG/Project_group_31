@@ -13,7 +13,16 @@ public class Student extends User {
     public Student(String firstName, String lastName, String email, String password,
                    String phoneNumber, String programOfStudy){
 
-        super(firstName, lastName, email, password, phoneNumber, "Student");
+
+        super(
+                email.replace(".", "_"),   // userId
+                firstName,
+                lastName,
+                email,
+                password,
+                phoneNumber,
+                "Student"
+        );
         this.programOfStudy = programOfStudy;
     }
 

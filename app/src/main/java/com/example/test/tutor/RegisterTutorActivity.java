@@ -2,34 +2,26 @@ package com.example.test.tutor;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.widget.Switch;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.test.R;
 import com.example.test.sharedfiles.model.RegistrationRequest;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class RegisterTutorActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private DatabaseReference databaseRef;
 
     EditText firstName, lastName, email, password, phone, degree, courses;
     Button registerBtn;
-
-    Switch switchAutoApproval;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +29,6 @@ public class RegisterTutorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register_tutor);
 
         mAuth = FirebaseAuth.getInstance();
-        databaseRef = FirebaseDatabase.getInstance().getReference("tutors");
 
         firstName = findViewById(R.id.etFirstName);
         lastName = findViewById(R.id.etLastName);
@@ -48,14 +39,7 @@ public class RegisterTutorActivity extends AppCompatActivity {
         courses = findViewById(R.id.etCourses);
         registerBtn = findViewById(R.id.btnRegister);
 
-
-
-        registerBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registerTutor();
-            }
-        });
+        registerBtn.setOnClickListener(v -> registerTutor());
     }
 
     private void registerTutor() {
@@ -66,11 +50,6 @@ public class RegisterTutorActivity extends AppCompatActivity {
         String ph = phone.getText().toString().trim();
         String deg = degree.getText().toString().trim();
         String crs = courses.getText().toString().trim();
-
-
-        boolean autoApproved =
-                switchAutoApproval != null
-                        && switchAutoApproval.isChecked();
 
         if (fName.isEmpty() || lName.isEmpty() || em.isEmpty() ||
                 pw.isEmpty() || ph.isEmpty() || deg.isEmpty() || crs.isEmpty()) {
@@ -84,57 +63,50 @@ public class RegisterTutorActivity extends AppCompatActivity {
                     if (user != null) {
                         String uid = user.getUid();
 
-                        Map<String, Object> tutorMap = new HashMap<>();
-                        tutorMap.put("firstName", fName);
-                        tutorMap.put("lastName", lName);
-                        tutorMap.put("email", em);
-                        tutorMap.put("phone", ph);
-                        tutorMap.put("highestdegree", deg);
-                        tutorMap.put("coursesOffered", crs);
-                        tutorMap.put("role", "Tutor");
-                        tutorMap.put("status", "Pending");
-                        tutorMap.put("autoApproved", autoApproved);
+                        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString(em + "_email", em);
+                        editor.putString(em + "_password", pw);
+                        editor.putString(em + "_role", "Tutor");
+                        editor.putString(em + "_firstName", fName);
+                        editor.putString(em + "_lastName", lName);
+                        editor.putString(em + "_phone", ph);
+                        editor.putString(em + "_degree", deg);
+                        editor.putString(em + "_courses", crs);
+                        editor.apply();
 
-                        databaseRef.child(uid).setValue(tutorMap)
-                                .addOnSuccessListener(aVoid -> {
-                                    SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = prefs.edit();
-                                    editor.putString(em + "_email", em);
-                                    editor.putString(em + "_password", pw);
-                                    editor.putString(em + "_role", "Tutor");
-                                    editor.putString(em + "_firstName", fName);
-                                    editor.putString(em + "_lastName", lName);
-                                    editor.putString(em + "_phone", ph);
-                                    editor.putString(em + "_degree", deg);
-                                    editor.putString(em + "_courses", crs);
-                                    editor.apply();
+                        RegistrationRequest req = new RegistrationRequest(
+                                fName,
+                                lName,
+                                em,
+                                ph,
+                                "Tutor",
+                                uid,
+                                pw
+                        );
 
-                                    RegistrationRequest request = new RegistrationRequest(fName, lName, em, ph, "Tutor");
-                                    request.setHighestDegree(deg);
+                        req.setHighestDegree(deg);
 
-                                    List<String> coursesArrayList = new ArrayList<>();
-                                    for (String s : crs.split(",")) {
-                                        String trimmedS = s.trim();
-                                        if (!trimmedS.isEmpty()) coursesArrayList.add(trimmedS);
-                                    }
-                                    request.setCoursesOffered(coursesArrayList);
+                        List<String> courseList = new ArrayList<>();
+                        for (String s : crs.split(",")) {
+                            String trimmed = s.trim();
+                            if (!trimmed.isEmpty()) courseList.add(trimmed);
+                        }
+                        req.setCoursesOffered(courseList);
 
-                                    String safeEmail = em.replace(".", "_");
-                                    FirebaseDatabase.getInstance().getReference("registrationRequests")
-                                            .child(safeEmail)
-                                            .setValue(request)
-                                            .addOnSuccessListener(x ->
-                                                    Toast.makeText(this, "Registration submitted for admin approval", Toast.LENGTH_SHORT).show()
-                                            )
-                                            .addOnFailureListener(e2 ->
-                                                    Toast.makeText(this, "Request failed: " + e2.getMessage(), Toast.LENGTH_SHORT).show());
+                        String safeEmail = em.replace(".", "_");
 
-                                    Toast.makeText(this, "Tutor Registered Successfully!", Toast.LENGTH_SHORT).show();
-                                    finish();
-                                })
-                                .addOnFailureListener(e ->
-                                        Toast.makeText(this, "Failed to save data: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                                );
+                        FirebaseDatabase.getInstance().getReference("registrationRequests")
+                                .child(safeEmail)
+                                .setValue(req)
+                                .addOnSuccessListener(x ->
+                                        Toast.makeText(this, "Registration submitted for admin approval", Toast.LENGTH_LONG).show()
+                                )
+                                .addOnFailureListener(e2 ->
+                                        Toast.makeText(this, "Request failed: " + e2.getMessage(), Toast.LENGTH_SHORT).show());
+
+                        Toast.makeText(this, "Tutor Registered Successfully!", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
                 })
                 .addOnFailureListener(e ->

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RegistrationRequest {
+
     private String firstName;
     private String lastName;
     private String email;
@@ -11,6 +12,7 @@ public class RegistrationRequest {
     private String role;
     private String status;
     private long submittedAt;
+
     private Long decidedAt;
     private String decidedByAdminId;
     private String rejectionReason;
@@ -18,17 +20,31 @@ public class RegistrationRequest {
     private String programOfStudy;
 
     private String highestDegree;
-    private List<String> coursesOffered;
+    private List<String> coursesOffered = new ArrayList<>();
+
+    private String userId;
+    private String password;
 
     public RegistrationRequest() {
+        // Firebase needs this empty constructor
     }
 
-    public RegistrationRequest(String firstName, String lastName, String email, String phone, String role) {
+    public RegistrationRequest(String firstName,
+                               String lastName,
+                               String email,
+                               String phone,
+                               String role,
+                               String userId,
+                               String password) {
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
         this.role = role;
+        this.userId = userId;
+        this.password = password;
+
         this.status = "PENDING";
         this.submittedAt = System.currentTimeMillis();
         this.coursesOffered = new ArrayList<>();
@@ -69,7 +85,13 @@ public class RegistrationRequest {
 
     public String getHighestDegree() { return highestDegree; }
     public void setHighestDegree(String highestDegree) { this.highestDegree = highestDegree; }
-    
+
     public List<String> getCoursesOffered() { return coursesOffered; }
     public void setCoursesOffered(List<String> coursesOffered) { this.coursesOffered = coursesOffered; }
+
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }

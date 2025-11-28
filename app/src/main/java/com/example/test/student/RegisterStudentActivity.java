@@ -11,15 +11,12 @@ import com.example.test.R;
 import com.example.test.sharedfiles.model.RegistrationRequest;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RegisterStudentActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private DatabaseReference databaseReference;
+
     private EditText firstName, lastName, email, password, phone, program;
     private Button registerButton;
 
@@ -29,7 +26,6 @@ public class RegisterStudentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register_student);
 
         mAuth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("students");
 
         firstName = findViewById(R.id.etFirstName);
         lastName = findViewById(R.id.etLastName);
@@ -39,12 +35,7 @@ public class RegisterStudentActivity extends AppCompatActivity {
         program = findViewById(R.id.etProgram);
         registerButton = findViewById(R.id.btnRegister);
 
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registerStudent();
-            }
-        });
+        registerButton.setOnClickListener(v -> registerStudent());
     }
 
     private void registerStudent() {
@@ -60,6 +51,7 @@ public class RegisterStudentActivity extends AppCompatActivity {
             Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
             return;
         }
+
         if (pw.length() < 6) {
             Toast.makeText(this, "Password must be at least 6 characters long", Toast.LENGTH_SHORT).show();
             return;
@@ -71,34 +63,28 @@ public class RegisterStudentActivity extends AppCompatActivity {
                     if (user != null) {
                         String uid = user.getUid();
 
-                        Map<String, Object> studentMap = new HashMap<>();
-                        studentMap.put("firstName", fName);
-                        studentMap.put("lastName", lName);
-                        studentMap.put("email", em);
-                        studentMap.put("phone", ph);
-                        studentMap.put("programOfStudy", prog);
-                        studentMap.put("role", "Student");
-                        studentMap.put("status", "Pending");
+                        // Create registration request
+                        RegistrationRequest req = new RegistrationRequest(
+                                fName,
+                                lName,
+                                em,
+                                ph,
+                                "Student",
+                                uid,
+                                pw
+                        );
+                        req.setProgramOfStudy(prog);
 
-                        databaseReference.child(uid).setValue(studentMap)
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Student registered successfully!", Toast.LENGTH_SHORT).show();
+                        String safeEmailKey = em.replace(".", "_");
 
-                                    RegistrationRequest req = new RegistrationRequest(fName, lName, em, ph, "Student");
-                                    req.setProgramOfStudy(prog);
-
-                                    String safeEmailKey = em.replace(".", "_");
-                                    FirebaseDatabase.getInstance().getReference("registrationRequests")
-                                            .child(safeEmailKey)
-                                            .setValue(req)
-                                            .addOnSuccessListener(r ->
-                                                    Toast.makeText(this, "Registration submitted for admin approval", Toast.LENGTH_SHORT).show()
-                                            )
-                                            .addOnFailureListener(e ->
-                                                    Toast.makeText(this, "Request failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                                })
+                        FirebaseDatabase.getInstance().getReference("registrationRequests")
+                                .child(safeEmailKey)
+                                .setValue(req)
+                                .addOnSuccessListener(r ->
+                                        Toast.makeText(this, "Registration submitted for admin approval", Toast.LENGTH_LONG).show()
+                                )
                                 .addOnFailureListener(e ->
-                                        Toast.makeText(this, "Failed to save data: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(this, "Request failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                                 );
                     }
                 })

@@ -207,6 +207,8 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
                                     session.getStatus(),
                                     session.getSlotId()
                             );
+                            booking.setBookingId(child.getKey());
+
 
                             String tutorId = booking.getTutorId();
                             fetchTutorInfo(tutorId, (name, rating) -> {
@@ -265,6 +267,13 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
             upcomingBookings.remove(index);
             upcomingAdapter.notifyItemRemoved(index);
         }
+
+        int reqIndex = requestedBookings.indexOf(booking);
+        if (reqIndex != -1) {
+            requestedBookings.remove(reqIndex);
+            requestedAdapter.notifyItemRemoved(reqIndex);
+        }
+
 
         Toast.makeText(this, "Booking cancelled", Toast.LENGTH_SHORT).show();
     }

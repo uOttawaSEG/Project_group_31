@@ -27,8 +27,16 @@ public class Tutor extends User {
     public Tutor(String firstName, String lastName, String email, String password,
                  String phoneNumber, String highestDegree, List<String> coursesOffered) {
 
-        super(firstName, lastName, email, password, phoneNumber, "Tutor");
-        this.highestDegree = highestDegree;
+
+        super(
+                email.replace(".", "_"),
+                firstName,
+                lastName,
+                email,
+                password,
+                phoneNumber,
+                "Tutor"
+        );        this.highestDegree = highestDegree;
         this.coursesOffered = coursesOffered;
         this.autoApproval = false; // default: manual approval
         this.slots = new ArrayList<>();

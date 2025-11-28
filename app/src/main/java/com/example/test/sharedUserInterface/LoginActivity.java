@@ -3,14 +3,17 @@ package com.example.test.sharedUserInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.test.R;
+import com.example.test.admin.AdminInboxActivity;
+import com.example.test.student.StudentDashboardActivity;
+import com.example.test.tutor.TutorDashboardActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
@@ -18,7 +21,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
-import com.example.test.admin.AdminInboxActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -41,93 +43,102 @@ public class LoginActivity extends AppCompatActivity {
         passwordField = findViewById(R.id.etPassword);
         loginButton = findViewById(R.id.btnLogin);
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = emailField.getText().toString().trim();
-                String password = passwordField.getText().toString().trim();
+        loginButton.setOnClickListener(v -> doLogin());
+    }
 
-                if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(LoginActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+    private void doLogin() {
+        String email = emailField.getText().toString().trim();
+        String password = passwordField.getText().toString().trim();
 
-                if (email.equalsIgnoreCase(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
-                    Toast.makeText(LoginActivity.this, "Welcome, Administrator!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(LoginActivity.this, AdminInboxActivity.class));
-                    finish();
-                    return;
-                }
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                            @Override
-                            public void onSuccess(AuthResult authResult) {
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                if (user != null) {
-                                    FirebaseDatabase.getInstance().getReference("tutors")
-                                            .child(user.getUid())
-                                            .get()
-                                            .addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
-                                                @Override
-                                                public void onSuccess(DataSnapshot snapshot) {
-                                                    String role = snapshot.exists() ? "Tutor" : "Student";
-                                                    String dotKey = email.replace(".", "_");
+        if (email.equalsIgnoreCase(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
+            Toast.makeText(this, "Welcome, Administrator!", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, AdminInboxActivity.class));
+            finish();
+            return;
+        }
 
-                                                    FirebaseDatabase.getInstance().getReference("registrationRequests")
-                                                            .child(dotKey)
-                                                            .get()
-                                                            .addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
-                                                                @Override
-                                                                public void onSuccess(DataSnapshot reqSnap) {
-                                                                    String status = reqSnap.child("status").getValue(String.class);
-                                                                    if (status == null || "PENDING".equals(status)) {
-                                                                        Toast.makeText(LoginActivity.this, "Awaiting administrator approval.", Toast.LENGTH_LONG).show();
-                                                                        return;
-                                                                    }
-                                                                    if ("REJECTED".equals(status)) {
-                                                                        Toast.makeText(LoginActivity.this, "Your registration was rejected. For assistance call 555-555-5555.", Toast.LENGTH_LONG).show();
-                                                                        return;
-                                                                    }
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> checkUserStatus())
+                .addOnFailureListener(e -> checkSharedPreferencesLogin(email, password, e.getMessage()));
+    }
 
-                                                                    Intent intent;
-                                                                    if ("Tutor".equals(role)) {
-                                                                        intent = new Intent(LoginActivity.this, com.example.test.tutor.TutorDashboardActivity.class);
-                                                                    } else {
-                                                                        intent = new Intent(LoginActivity.this, com.example.test.student.StudentDashboardActivity.class);
-                                                                    }
-                                                                    intent.putExtra("email", email);
-                                                                    intent.putExtra("role", role);
-                                                                    startActivity(intent);
-                                                                    finish();
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
 
-                                                                }
-                                                            })
-                                                            .addOnFailureListener(new OnFailureListener() {
-                                                                @Override
-                                                                public void onFailure(@NonNull Exception e2) {
-                                                                    Toast.makeText(LoginActivity.this, "Approval check failed: " + e2.getMessage(), Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            });
-                                                }
-                                            })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Toast.makeText(LoginActivity.this, "Failed to fetch role: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
+        String uid = user.getUid();
+
+        FirebaseDatabase.getInstance().getReference("tutors")
+                .child(uid)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    if (snapshot.exists()) {
+                        String status = snapshot.child("status").getValue(String.class);
+
+                        if (status == null || status.equals("PENDING")) {
+                            Toast.makeText(this, "Awaiting administrator approval.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        if (status.equals("REJECTED")) {
+                            Toast.makeText(this, "Registration rejected.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        goToTutorDashboard(user.getEmail());
+                        return;
+                    }
+
+                    FirebaseDatabase.getInstance().getReference("students")
+                            .child(uid)
+                            .get()
+                            .addOnSuccessListener(studentSnap -> {
+
+                                if (!studentSnap.exists()) {
+                                    Toast.makeText(this, "Still waiting for admin approval", Toast.LENGTH_SHORT).show();
+                                    return;
                                 }
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                checkSharedPreferencesLogin(email, password, e.getMessage());
-                            }
-                        });
-            }
-        });
+
+                                String status = studentSnap.child("status").getValue(String.class);
+
+                                if (status == null || status.equals("PENDING")) {
+                                    Toast.makeText(this, "Awaiting administrator approval.", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                if (status.equals("REJECTED")) {
+                                    Toast.makeText(this, "Registration rejected.", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+
+                                goToStudentDashboard(user.getEmail());
+
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Failed to fetch student record: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to fetch user role: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void goToTutorDashboard(String email) {
+        Intent intent = new Intent(this, TutorDashboardActivity.class);
+        intent.putExtra("email", email);
+        intent.putExtra("role", "Tutor");
+        startActivity(intent);
+        finish();
+    }
+
+    private void goToStudentDashboard(String email) {
+        Intent intent = new Intent(this, StudentDashboardActivity.class);
+        intent.putExtra("email", email);
+        intent.putExtra("role", "Student");
+        startActivity(intent);
+        finish();
     }
 
     private void checkSharedPreferencesLogin(String email, String password, String firebaseError) {
@@ -135,23 +146,11 @@ public class LoginActivity extends AppCompatActivity {
         String storedPassword = prefs.getString(email + "_password", null);
 
         if (storedPassword == null || !storedPassword.equals(password)) {
-            if (firebaseError != null && firebaseError.contains("password is invalid")) {
-                Toast.makeText(this, "Invalid password!", Toast.LENGTH_SHORT).show();
-            } else if (firebaseError != null && firebaseError.contains("no user record")) {
-                Toast.makeText(this, "User not found! Register first.", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Login failed: " + firebaseError, Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(this, "Login failed: " + firebaseError, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String role = prefs.getString(email + "_role", null);
-        if (role == null) {
-            Toast.makeText(this, "User not found! Register first.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        prefs.edit().putString("currentUserEmail", email).apply();
+        String role = prefs.getString(email + "_role", "Student");
 
         Intent intent = new Intent(this, WelcomeActivity.class);
         intent.putExtra("role", role);
