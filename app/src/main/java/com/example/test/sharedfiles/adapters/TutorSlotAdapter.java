@@ -45,9 +45,22 @@ public class TutorSlotAdapter extends RecyclerView.Adapter<TutorSlotAdapter.Slot
 
         holder.tvSlotTime.setText(dateTime);
 
+        if (currentSlot.getIsBooked()) {
+            holder.btnDeleteSlot.setEnabled(false);
+            holder.btnDeleteSlot.setAlpha(0.4f);
+        } else {
+            holder.btnDeleteSlot.setEnabled(true);
+            holder.btnDeleteSlot.setAlpha(1f);
+        }
+
         holder.btnDeleteSlot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if (currentSlot.getIsBooked()) {
+                    return;
+                }
+
                 if (deleteListener != null) {
                     deleteListener.onSlotDelete(currentSlot);
                 }

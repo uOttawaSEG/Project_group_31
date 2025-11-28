@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -115,25 +116,17 @@ public class FirebaseRepository {
     // we mark the slot of the tutor is already booked or not based on its current status
     public void updateSlotBooking(String slotId, boolean isBooked, String bookingId) {
 
-        // Update slot booking state
-        db.child("slots")
-                .child(slotId)
-                .child("isBooked")
-                .setValue(isBooked);
+        DatabaseReference slotRef = db.child("slots").child(slotId);
 
-        // Update or clear booking id
-        if (isBooked) {
-            db.child("slots")
-                    .child(slotId)
-                    .child("bookingId")
-                    .setValue(bookingId);
-        } else {
-            db.child("slots")
-                    .child(slotId)
-                    .child("bookingId")
-                    .setValue(null);
-        }
+        // make sure BOTH fields are updated — this is the key fix
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("isBooked", isBooked);
+        updates.put("booked", isBooked);     // <-- your Firebase still has this leftover
+        updates.put("bookingId", bookingId);
+
+        slotRef.updateChildren(updates);
     }
+
 
 
     public void addSession(Session session, OnCompleteListener<Void> listener) {
@@ -228,27 +221,73 @@ public class FirebaseRepository {
                 .equalTo(studentId);
     }
     // Using student ID, their booking status can be changed to cancelled and then update the status
-    public void cancelBooking(String bookingId,String slotId) {
-        db.child("bookings")
+    public void cancelBooking(String bookingId, String slotId) {
+
+        db.child(PATH_BOOKINGS)
                 .child(bookingId)
                 .child("status")
                 .setValue("Cancelled");
+
         updateSlotBooking(slotId, false, null);
         checkAndCancelSessionIfNoBookings(slotId);
-
+        deleteStudentSlotRequest(slotId);
     }
+
+    private void deleteSessionForSlot(String slotId) {
+        db.child(PATH_SESSIONS)
+                .orderByChild("slotId")
+                .equalTo(slotId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            s.getRef().removeValue();  // DELETE session!
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) { }
+                });
+    }
+
+
+    private void deleteStudentSlotRequest(String slotId) {
+        db.child(PATH_STUDENT_SLOT_REQ)
+                .orderByChild("slotId")
+                .equalTo(slotId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot req : snapshot.getChildren()) {
+                            req.getRef().removeValue();   // DELETE request!
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) { }
+                });
+    }
+
+
     public DatabaseReference getDatabaseReference(String path) {
         return db.child(path);
     }
     // this help tutor cancel the session and then cancel the slot
-    public void tutorCancelBooking(String bookingId, String slotId) {
-        db.child("bookings")
+    public void cancelBooking(String bookingId, String slotId, String requestId) {
+
+        db.child(PATH_BOOKINGS)
                 .child(bookingId)
                 .child("status")
                 .setValue("Cancelled");
-        updateSlotBooking(slotId, false, null);
-        checkAndCancelSessionIfNoBookings(slotId);
 
+        updateSlotBooking(slotId, false, null);
+
+        checkAndCancelSessionIfNoBookings(slotId);
+        if (requestId != null) {
+            db.child(PATH_STUDENT_SLOT_REQ)
+                    .child(requestId)
+                    .removeValue();
+        }
     }
     public void updateTutorAverageRating(String tutorId) {
         DatabaseReference ratingsRef = db.child("ratings").child(tutorId);
@@ -337,15 +376,6 @@ public class FirebaseRepository {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) { }
                 });
-    }
-    public void notifyStudentTutorCancelled(String studentId, String bookingId) {
-        FirebaseDatabase.getInstance()
-                .getReference("cancel_notifications")
-                .child(studentId)
-                .child(bookingId)
-                .setValue(true);
-        notifyStudentTutorCancelled(studentId, bookingId);
-
     }
 
 }

@@ -154,7 +154,7 @@ public class AdminInboxActivity extends AppCompatActivity {
                                 requestNode.removeValue();
 
                                 Toast.makeText(this,
-                                        "Approved and moved: " + r.getEmail(),
+                                        "Approved  ",
                                         Toast.LENGTH_SHORT).show();
                             })
                             .addOnFailureListener(e ->

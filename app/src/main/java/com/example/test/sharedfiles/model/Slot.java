@@ -53,7 +53,9 @@ public class Slot {
         return tutorId;
     }
 
-    public String getCourseCode() { return courseCode;}
+    public String getCourseCode() {
+        return courseCode;
+    }
 
     public void setTutorId(String tutorId) {
         this.tutorId = tutorId;
@@ -68,6 +70,7 @@ public class Slot {
         this.date = date;
 
     }
+
     public void setCourseCode(String courseCode) {
         this.courseCode = courseCode;
     }
@@ -108,22 +111,20 @@ public class Slot {
         this.available = available;
     }
 
+    public boolean getIsBooked() {
+        return isBooked;
+    }
 
     public void setIsBooked(boolean b) {
         isBooked = b;
     }
-   // method to check if slot is booked or not
-    public boolean isBooked() {
-        return isBooked;
-    }
-    // update the booking status of this slot
-    public void setBooked(boolean booked) {
-        this.isBooked = booked;
-    }
-    // Get the bookingID for this slot
+    // method to check if slot is booked or not
+
+
     public String getBookingId() {
         return bookingId;
     }
+
     // update the bookingID of this slot
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
@@ -144,7 +145,6 @@ public class Slot {
     public void setTutorRating(double tutorRating) {
         this.tutorRating = tutorRating;
     }
-
 
 
     //checks if the slot is from the past
@@ -191,7 +191,4 @@ public class Slot {
 
     }
 
-    public boolean getIsBooked() {
-        return isBooked;
-    }
 }

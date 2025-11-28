@@ -71,6 +71,38 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) return;
 
+        String emailKey = user.getEmail().replace(".", "_");
+
+        FirebaseDatabase.getInstance().getReference("registrationRequests")
+                .child(emailKey)
+                .get()
+                .addOnSuccessListener(reqSnap -> {
+
+                    if (reqSnap.exists()) {
+                        String status = reqSnap.child("status").getValue(String.class);
+
+                        if (status == null || status.equals("PENDING")) {
+                            Toast.makeText(this, "Awaiting administrator approval.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        if (status.equals("REJECTED")) {
+                            Toast.makeText(this,
+                                    "Your registration was rejected. Please contact 613-555-3214 for support.",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    }
+                    checkApprovedUserRole(user);
+
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error checking approval: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void checkApprovedUserRole(FirebaseUser user) {
+
         String uid = user.getUid();
 
         FirebaseDatabase.getInstance().getReference("tutors")
@@ -79,51 +111,33 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnSuccessListener(snapshot -> {
 
                     if (snapshot.exists()) {
-                        String status = snapshot.child("status").getValue(String.class);
-
-                        if (status == null || status.equals("PENDING")) {
-                            Toast.makeText(this, "Awaiting administrator approval.", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        if (status.equals("REJECTED")) {
-                            Toast.makeText(this, "Registration rejected.", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
                         goToTutorDashboard(user.getEmail());
                         return;
                     }
-
                     FirebaseDatabase.getInstance().getReference("students")
                             .child(uid)
                             .get()
                             .addOnSuccessListener(studentSnap -> {
 
                                 if (!studentSnap.exists()) {
-                                    Toast.makeText(this, "Still waiting for admin approval", Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
-
-                                String status = studentSnap.child("status").getValue(String.class);
-
-                                if (status == null || status.equals("PENDING")) {
-                                    Toast.makeText(this, "Awaiting administrator approval.", Toast.LENGTH_LONG).show();
-                                    return;
-                                }
-                                if (status.equals("REJECTED")) {
-                                    Toast.makeText(this, "Registration rejected.", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(this,
+                                            "No approved account found. Please wait for admin approval.",
+                                            Toast.LENGTH_SHORT).show();
                                     return;
                                 }
 
                                 goToStudentDashboard(user.getEmail());
-
                             })
                             .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Failed to fetch student record: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                    Toast.makeText(this,
+                                            "Failed to fetch student record: " + e.getMessage(),
+                                            Toast.LENGTH_SHORT).show());
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to fetch user role: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+
+
 
     private void goToTutorDashboard(String email) {
         Intent intent = new Intent(this, TutorDashboardActivity.class);

@@ -305,8 +305,11 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
 
     @Override
     public void onSlotDelete(Slot slot) {
-        if (slot.getIsBooked()) {
-            Toast.makeText(this, "Cannot delete a slot that has a booked session.", Toast.LENGTH_LONG).show();
+
+        if (slot.getIsBooked() && slot.getBookingId() != null) {
+            Toast.makeText(this,
+                    "Cannot delete a slot that currenly has booked session.",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -318,16 +321,13 @@ public class ManageSlotsActivity extends AppCompatActivity implements TutorSlotA
             return;
         }
 
-        repository.deleteSlot(key, new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Toast.makeText(ManageSlotsActivity.this,
-                            "Slot deleted", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(ManageSlotsActivity.this,
-                            "Failed to delete slot", Toast.LENGTH_SHORT).show();
-                }
+        repository.deleteSlot(key, task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(ManageSlotsActivity.this,
+                        "Slot deleted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(ManageSlotsActivity.this,
+                        "Failed to delete slot", Toast.LENGTH_SHORT).show();
             }
         });
     }

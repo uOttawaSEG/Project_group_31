@@ -121,7 +121,6 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                         upcomingBookings.clear();
-                        requestedBookings.clear();
 
                         for (DataSnapshot child : snapshot.getChildren()) {
 
@@ -208,13 +207,14 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
                                     session.getSlotId()
                             );
                             booking.setBookingId(child.getKey());
+                            booking.setRequestId(child.getKey());
 
 
                             String tutorId = booking.getTutorId();
                             fetchTutorInfo(tutorId, (name, rating) -> {
                                 booking.setTutorName(name);
                                 booking.setTutorRating(rating);
-
+                                if (booking.isPast()) return;
                                 requestedBookings.add(booking);
 
                                 sortByDateDescending(requestedBookings);
@@ -261,7 +261,8 @@ public class BookingsActivity extends AppCompatActivity implements BookingAdapte
             return;
         }
 
-        repository.cancelBooking(booking.getBookingId(), booking.getSlotId());
+
+        repository.cancelBooking(booking.getBookingId(), booking.getSlotId(), booking.getRequestId());
         int index = upcomingBookings.indexOf(booking);
         if (index != -1) {
             upcomingBookings.remove(index);

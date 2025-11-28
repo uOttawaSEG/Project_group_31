@@ -15,6 +15,7 @@ public class StudentBooking {
     private String endTime;
     private boolean alreadyRated = false;
     private double tutorRating;
+    private String requestId;
 
     private String status;     // it can be "Pending", "Approved", "Rejected", "Cancelled"
     private String slotId;   // the slot ID that linked to the booking
@@ -150,6 +151,9 @@ public class StudentBooking {
     public void setSlotId(String slotId) {
         this.slotId = slotId;
     }
+
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String id) { requestId = id; }
 
 
     // this toMillis method allows the systems to convert the time into millisecons, which will serve
