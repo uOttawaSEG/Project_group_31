@@ -118,10 +118,10 @@ public class FirebaseRepository {
 
         DatabaseReference slotRef = db.child("slots").child(slotId);
 
-        // make sure BOTH fields are updated — this is the key fix
+       
         Map<String, Object> updates = new HashMap<>();
         updates.put("isBooked", isBooked);
-        updates.put("booked", isBooked);     // <-- your Firebase still has this leftover
+        updates.put("booked", isBooked);     // ( I fixed this overhere Fares: Duy Le)
         updates.put("bookingId", bookingId);
 
         slotRef.updateChildren(updates);
